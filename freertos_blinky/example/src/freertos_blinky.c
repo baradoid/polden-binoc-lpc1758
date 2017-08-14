@@ -64,7 +64,10 @@ static void vReleTask(void *pvParameters) {
 
 	//Chip_IOCON_PinMux(LPC_IOCON, 2, 5, IOCON_MODE_INACT, IOCON_FUNC1);
 	//Chip_IOCON_PinMux(LPC_IOCON, 0, 3, IOCON_MODE_INACT, IOCON_FUNC1);
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0);
+
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
 
 	bool releState = false;
 
@@ -72,22 +75,46 @@ static void vReleTask(void *pvParameters) {
 		//Board_LED_Set(0, LedState);
 
 		Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, releState);
+		Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, releState);
 		releState = (bool) !releState;
 		/* About a 3Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ / 2);
+		vTaskDelay(configTICK_RATE_HZ*10 );
 	}
 }
 
-/* LED1 toggle thread */
+static ADC_CLOCK_SETUP_T ADCSetup;
 static void vLEDTask1(void *pvParameters) {
-	bool LedState = false;
+	Chip_IOCON_PinMux(LPC_IOCON, 0, 25, IOCON_MODE_INACT, IOCON_FUNC1);
+	//Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 25, false);  //VBat
 
+	ADC_CLOCK_SETUP_T adcSetupStr;
+	adcSetupStr.adcRate =  ADC_MAX_SAMPLE_RATE;
+	adcSetupStr.bitsAccuracy = 12;
+	adcSetupStr.burstMode = false;
+	Chip_ADC_Init(LPC_ADC, &ADCSetup);
+	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH2, ENABLE);
+	//bool LedState = false;
+
+
+	Chip_ADC_SetBurstCmd(LPC_ADC, DISABLE);
+	uint16_t val;
+	Status stat;
 	while (1) {
-		Board_LED_Set(0, LedState);
-		LedState = (bool) !LedState;
+		Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+		while (Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_DONE_STAT) != SET) {}
 
-		/* About a 3Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ / 6);
+		Chip_ADC_ReadValue(LPC_ADC, ADC_CH2, &val);
+
+		if(stat = SUCCESS){
+			DEBUGOUT("ADC: %d\r\n", val);
+		}
+		else{
+			DEBUGOUT("ADC error\r\n");
+
+		}
+
+
+		vTaskDelay(configTICK_RATE_HZ / 4);
 	}
 }
 
