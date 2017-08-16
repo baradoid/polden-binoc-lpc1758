@@ -46,7 +46,8 @@
 /*****************************************************************************
  * Private functions
  ****************************************************************************/
-
+uint16_t ssp0 = 0;
+uint16_t adc = 0;
 /* Sets up system hardware */
 static void prvSetupHardware(void)
 {
@@ -106,7 +107,8 @@ static void vLEDTask1(void *pvParameters) {
 		Chip_ADC_ReadValue(LPC_ADC, ADC_CH2, &val);
 
 		if(stat = SUCCESS){
-			DEBUGOUT("ADC: %d\r\n", val);
+			//DEBUGOUT("ADC: %d\r\n", val);
+			adc = val;
 		}
 		else{
 			DEBUGOUT("ADC error\r\n");
@@ -138,7 +140,7 @@ static void vUARTTask(void *pvParameters) {
 	int tickCnt = 0;
 
 	while (1) {
-		DEBUGOUT("Tick: %d\r\n", tickCnt);
+		DEBUGOUT("Tick: %d, %x 0x%x\r\n", tickCnt, adc, ssp0);
 		tickCnt++;
 
 		/* About a 1s delay here */
@@ -154,13 +156,15 @@ static void vSSPTask(void *pvParameters)
 	Chip_SSP_Init(LPC_SSP0);
 
 	ssp_format.frameFormat = SSP_FRAMEFORMAT_SPI;
-	ssp_format.bits = SSP_BITS_8;
+	ssp_format.bits = SSP_BITS_14;
 	ssp_format.clockMode = SSP_CLOCK_MODE0;
 	Chip_SSP_SetFormat(LPC_SSP0, ssp_format.bits, ssp_format.frameFormat, ssp_format.clockMode);
 	Chip_SSP_Enable(LPC_SSP0);
 
 	while (1) {
 		Chip_SSP_SendFrame(LPC_SSP0, 0xabcd);
+		ssp0 = Chip_SSP_ReceiveFrame(LPC_SSP0);
+
 		/* About a 7Hz on/off toggle rate */
 		vTaskDelay(configTICK_RATE_HZ / 14);
 	}
