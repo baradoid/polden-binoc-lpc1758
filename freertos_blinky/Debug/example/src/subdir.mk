@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../example/src/billValidator.c \
 ../example/src/cr_startup_lpc175x_6x.c \
 ../example/src/freertos_blinky.c \
 ../example/src/sysinit.c 
 
 OBJS += \
+./example/src/billValidator.o \
 ./example/src/cr_startup_lpc175x_6x.o \
 ./example/src/freertos_blinky.o \
 ./example/src/sysinit.o 
 
 C_DEPS += \
+./example/src/billValidator.d \
 ./example/src/cr_startup_lpc175x_6x.d \
 ./example/src/freertos_blinky.d \
 ./example/src/sysinit.d 

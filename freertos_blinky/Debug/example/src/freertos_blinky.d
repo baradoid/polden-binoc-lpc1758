@@ -50,7 +50,8 @@ example/src/freertos_blinky.o example/src/freertos_blinky.d: \
  C:\dev\polden-binoc\polden-binoc-lpc1758\freertos_blinky\freertos\inc/mpu_wrappers.h \
  C:\dev\polden-binoc\polden-binoc-lpc1758\freertos_blinky\freertos\inc/task.h \
  C:\dev\polden-binoc\polden-binoc-lpc1758\freertos_blinky\freertos\inc/list.h \
- C:\dev\polden-binoc\polden-binoc-lpc1758\lpc_chip_175x_6x\inc/gpio_17xx_40xx.h
+ C:\dev\polden-binoc\polden-binoc-lpc1758\lpc_chip_175x_6x\inc/gpio_17xx_40xx.h \
+ C:\dev\polden-binoc\polden-binoc-lpc1758\freertos_blinky\example\inc/billValidator.h
 
 C:\dev\polden-binoc\polden-binoc-lpc1758\lpc_board_nxp_lpcxpresso_1769\inc/board.h:
 
@@ -153,3 +154,5 @@ C:\dev\polden-binoc\polden-binoc-lpc1758\freertos_blinky\freertos\inc/task.h:
 C:\dev\polden-binoc\polden-binoc-lpc1758\freertos_blinky\freertos\inc/list.h:
 
 C:\dev\polden-binoc\polden-binoc-lpc1758\lpc_chip_175x_6x\inc/gpio_17xx_40xx.h:
+
+C:\dev\polden-binoc\polden-binoc-lpc1758\freertos_blinky\example\inc/billValidator.h:

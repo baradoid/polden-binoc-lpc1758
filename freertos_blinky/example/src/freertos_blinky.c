@@ -34,7 +34,7 @@
 #include "task.h"
 
 #include "gpio_17xx_40xx.h"
-
+#include "billValidator.h"
 /*****************************************************************************
  * Private types/enumerations/variables
  ****************************************************************************/
@@ -207,6 +207,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) NULL);
 
+	xTaskCreate(vBVTask, (signed char *) "vBVTask",
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				(xTaskHandle *) NULL);
 
 	/* Start the scheduler */
 	vTaskStartScheduler();
