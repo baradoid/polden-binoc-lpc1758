@@ -46,25 +46,7 @@ void vBVTask(void *pvParameters)
 	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 19, true);
 
 	for(;;){
-		  if((xTaskGetTickCount() - lastBVPollTime) > 200){
-			lastBVPollTime = xTaskGetTickCount();
-
-			if(ccState == powerUpState){
-				DEBUGOUT("pu-state -> reset\r\n");
-			  Chip_UART_SendBlocking(LPC_UART1, &(resetReqArr[0]), 6);
-			  ccState = unknownState;
-			}
-			else if(ccState == disableState){
-				DEBUGOUT("dis-state -> write bill\r\n");
-			  Chip_UART_SendBlocking(LPC_UART1, &(writeBillTypeArr[0]), 12);
-			  ccState = unknownState;
-			}
-			else{
-				//DEBUGOUT("poll\r\n");
-			  Chip_UART_SendBlocking(LPC_UART1, &(pollReqArr[0]), 6);
-			}
-		  }
-		  else if((Chip_UART_ReadLineStatus(LPC_UART1) & UART_LSR_RDR) != 0){
+		  if((Chip_UART_ReadLineStatus(LPC_UART1) & UART_LSR_RDR) != 0){
 			int rb = Chip_UART_ReadByte(LPC_UART1);
 			if (rb != 0x02)
 			  continue;
@@ -140,7 +122,24 @@ void vBVTask(void *pvParameters)
 //		          dispArr[6] = digTable[(int)(cashCount/10)%10];
 //		          dispArr[5] = digTable[(int)(cashCount/100)%10];
 //		          dispArr[4] = digTable[(int)(cashCount/1000)%10];
+		  }
+		  else if((xTaskGetTickCount() - lastBVPollTime) > 200){
+			  lastBVPollTime = xTaskGetTickCount();
+			  if(ccState == powerUpState){
+				  DEBUGOUT("pu-state -> reset\r\n");
+				  Chip_UART_SendBlocking(LPC_UART1, &(resetReqArr[0]), 6);
+				  ccState = unknownState;
+			  }
+			  else if(ccState == disableState){
+				  DEBUGOUT("dis-state -> write bill\r\n");
+				  Chip_UART_SendBlocking(LPC_UART1, &(writeBillTypeArr[0]), 12);
+				  ccState = unknownState;
+			  }
 
+			  else{
+				  //DEBUGOUT("poll\r\n");
+				  Chip_UART_SendBlocking(LPC_UART1, &(pollReqArr[0]), 6);
+			  }
 		  }
 
 		  vTaskDelay(configTICK_RATE_HZ/10);
