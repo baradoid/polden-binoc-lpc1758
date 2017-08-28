@@ -35,6 +35,7 @@
 
 #include "gpio_17xx_40xx.h"
 #include "billValidator.h"
+#include "oneWire.h"
 /*****************************************************************************
  * Private types/enumerations/variables
  ****************************************************************************/
@@ -140,7 +141,7 @@ static void vUARTTask(void *pvParameters) {
 	int tickCnt = 0;
 
 	while (1) {
-		DEBUGOUT("Tick: %d, %x 0x%x\r\n", tickCnt, adc, ssp0);
+		DEBUGOUT("Tick: %d, %x 0x%x temp=%d\r\n", tickCnt, adc, ssp0, temp);
 		tickCnt++;
 
 		/* About a 1s delay here */
@@ -204,10 +205,14 @@ int main(void)
 				(xTaskHandle *) NULL);
 
 	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2UL),
 				(xTaskHandle *) NULL);
 
 	xTaskCreate(vBVTask, (signed char *) "vBVTask",
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				(xTaskHandle *) NULL);
+
+	xTaskCreate(vOneWireTask, (signed char *) "vOneWireTask",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) NULL);
 

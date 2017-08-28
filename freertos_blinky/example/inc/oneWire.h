@@ -7,7 +7,7 @@
 
 #ifndef ONEWIRE_H_
 #define ONEWIRE_H_
+void vOneWireTask(void *pvParameters);
 
-
-
+extern int16_t temp;
 #endif /* ONEWIRE_H_ */
