@@ -76,11 +76,13 @@ static void vReleTask(void *pvParameters) {
 	while (1) {
 		//Board_LED_Set(0, LedState);
 
-		Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, releState);
+		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, releState);
 		Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, releState);
+
+		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, releState); //Heat
 		releState = (bool) !releState;
 		/* About a 3Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ*10 );
+		vTaskDelay(configTICK_RATE_HZ*2 );
 	}
 }
 
@@ -88,6 +90,7 @@ static ADC_CLOCK_SETUP_T ADCSetup;
 static void vLEDTask1(void *pvParameters) {
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 25, IOCON_MODE_INACT, IOCON_FUNC1);
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 25, false);  //VBat
+
 
 	ADC_CLOCK_SETUP_T adcSetupStr;
 	adcSetupStr.adcRate =  ADC_MAX_SAMPLE_RATE;
@@ -138,10 +141,10 @@ static SSP_ConfigFormat ssp_format;
 
 /* UART (or output) thread */
 static void vUARTTask(void *pvParameters) {
-	int tickCnt = 0;
+	uint32_t tickCnt = 0;
 
 	while (1) {
-		DEBUGOUT("Tick: %d, %x 0x%x temp=%d\r\n", tickCnt, adc, ssp0, temp);
+		DEBUGOUT("Tick: %d, %03x 0x%x temp=%d\r\n", tickCnt, adc, ssp0, temp);
 		tickCnt++;
 
 		/* About a 1s delay here */
@@ -182,6 +185,9 @@ static void vSSPTask(void *pvParameters)
 int main(void)
 {
 	prvSetupHardware();
+
+	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 6, true);  //Heat
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 

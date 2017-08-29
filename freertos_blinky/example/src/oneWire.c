@@ -108,6 +108,9 @@ void vOneWireTask(void *pvParameters)
 				//DEBUGOUT("OW: %d", temp);
 			}
 		}
+		else{
+			temp = -990;
+		}
 		iPresence = reset();
 		if(iPresence){
 			sendByte(0xcc); //Skip Rom
