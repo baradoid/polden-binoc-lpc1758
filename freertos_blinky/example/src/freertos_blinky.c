@@ -92,10 +92,10 @@ static void vLEDTask1(void *pvParameters) {
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 25, false);  //VBat
 
 
-	ADC_CLOCK_SETUP_T adcSetupStr;
-	adcSetupStr.adcRate =  ADC_MAX_SAMPLE_RATE;
-	adcSetupStr.bitsAccuracy = 12;
-	adcSetupStr.burstMode = false;
+//	ADC_CLOCK_SETUP_T adcSetupStr;
+//	adcSetupStr.adcRate =  ADC_MAX_SAMPLE_RATE;
+//	adcSetupStr.bitsAccuracy = 12;
+//	adcSetupStr.burstMode = false;
 	Chip_ADC_Init(LPC_ADC, &ADCSetup);
 	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH2, ENABLE);
 	//bool LedState = false;
@@ -108,9 +108,9 @@ static void vLEDTask1(void *pvParameters) {
 		Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
 		while (Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_DONE_STAT) != SET) {}
 
-		Chip_ADC_ReadValue(LPC_ADC, ADC_CH2, &val);
+		stat = Chip_ADC_ReadValue(LPC_ADC, ADC_CH2, &val);
 
-		if(stat = SUCCESS){
+		if(stat == SUCCESS){
 			//DEBUGOUT("ADC: %d\r\n", val);
 			adc = val;
 		}
