@@ -36,17 +36,15 @@
 #include "gpio_17xx_40xx.h"
 #include "billValidator.h"
 #include "oneWire.h"
+#include "adcTask.h"
 /*****************************************************************************
  * Private types/enumerations/variables
  ****************************************************************************/
 
-/*****************************************************************************
- * Public types/enumerations/variables
- ****************************************************************************/
+int lastAndrCpuTemp = 0, andrCpuTemp=0;
+bool bFanOn = false;
+bool bHeatOn = false;
 
-/*****************************************************************************
- * Private functions
- ****************************************************************************/
 uint16_t ssp0 = 0;
 uint16_t adc = 0;
 /* Sets up system hardware */
@@ -61,67 +59,62 @@ static void prvSetupHardware(void)
 	Board_LED_Set(0, false);
 }
 
-/* LED1 toggle thread */
-static void vReleTask(void *pvParameters) {
-
-	//Chip_IOCON_PinMux(LPC_IOCON, 2, 5, IOCON_MODE_INACT, IOCON_FUNC1);
-	//Chip_IOCON_PinMux(LPC_IOCON, 0, 3, IOCON_MODE_INACT, IOCON_FUNC1);
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0);
-
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
-
-	bool releState = false;
-
-	while (1) {
-		//Board_LED_Set(0, LedState);
-
-		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, releState);
-		Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, releState);
-
-		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, releState); //Heat
-		releState = (bool) !releState;
-		/* About a 3Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ*2 );
-	}
-}
-
-static ADC_CLOCK_SETUP_T ADCSetup;
-static void vLEDTask1(void *pvParameters) {
-	Chip_IOCON_PinMux(LPC_IOCON, 0, 25, IOCON_MODE_INACT, IOCON_FUNC1);
-	//Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 25, false);  //VBat
 
 
-//	ADC_CLOCK_SETUP_T adcSetupStr;
-//	adcSetupStr.adcRate =  ADC_MAX_SAMPLE_RATE;
-//	adcSetupStr.bitsAccuracy = 12;
-//	adcSetupStr.burstMode = false;
-	Chip_ADC_Init(LPC_ADC, &ADCSetup);
-	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH2, ENABLE);
-	//bool LedState = false;
+enum heatState_t {off, on} heatState = off;
+static void vHeatTask(void *pvParameters)
+{
+	const unsigned long heatMaximumEnableTimeSec = 7; //включаем нагрев максимум на это время
+	const unsigned long heatEnablePeriodTimeSec = 60; //не чаще чем один раз в это время
+	unsigned long lastHeatEnableTime = 0;
 
-
-	Chip_ADC_SetBurstCmd(LPC_ADC, DISABLE);
-	uint16_t val;
-	Status stat;
-	while (1) {
-		Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
-		while (Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_DONE_STAT) != SET) {}
-
-		stat = Chip_ADC_ReadValue(LPC_ADC, ADC_CH2, &val);
-
-		if(stat == SUCCESS){
-			//DEBUGOUT("ADC: %d\r\n", val);
-			adc = val;
+	for(;;){
+		uint32_t curTime = xTaskGetTickCount()/1000;
+	  if(dallasTemp > -99){
+		if(dallasTemp < 50){
+		  //Serial.print("less15 ");
+		  switch(heatState){
+			case off:
+			  if((curTime - lastHeatEnableTime) > heatEnablePeriodTimeSec){
+				//Serial.print("gp ");
+				lastHeatEnableTime = curTime;
+				heatState = on;
+				Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, true); //Heat
+				bHeatOn = true;
+			  }
+			  else{
+				Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false); //Heat
+				bHeatOn = false;
+			  }
+			  break;
+			case on:
+			//Serial.print("con ");
+			  if((curTime - lastHeatEnableTime) > heatMaximumEnableTimeSec){
+				//Serial.print("ge ");
+				Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false); //Heat
+				heatState = off;
+				bHeatOn = false;
+			  }
+			  else{
+				//Serial.print("le ");
+				Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, true); //Heat
+				bHeatOn = true;
+			  }
+			  break;
+		  }
+		  //Serial.println(" ");
 		}
 		else{
-			DEBUGOUT("ADC error\r\n");
-
+			Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false); //Heat
+		  heatState = off;
 		}
-
-
-		vTaskDelay(configTICK_RATE_HZ / 4);
-	}
+	  }
+	  else{
+		  Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false); //Heat
+		  heatState = off;
+	  }
+	  vTaskDelay(configTICK_RATE_HZ*heatMaximumEnableTimeSec );
+  }
 }
 
 ///* LED2 toggle thread */
@@ -137,14 +130,66 @@ static void vLEDTask1(void *pvParameters) {
 //	}
 //}
 
+
+static void vReleTask(void *pvParameters) {
+
+	//Chip_IOCON_PinMux(LPC_IOCON, 2, 5, IOCON_MODE_INACT, IOCON_FUNC1);
+	//Chip_IOCON_PinMux(LPC_IOCON, 0, 3, IOCON_MODE_INACT, IOCON_FUNC1);
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0);
+
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
+
+
+	//Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
+	//vTaskDelay(configTICK_RATE_HZ*10 );
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
+	bool releState = false;
+
+	while (1) {
+	    if(andrCpuTemp > 30){
+	      bFanOn = true;
+	      Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, true);
+	      //digitalWrite(pinFan2Ext, LOW);
+	    }
+	    else{
+	      bFanOn = false;
+	      Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, false);
+	      //digitalWrite(pinFan2Ext, HIGH);
+	    }
+		//Board_LED_Set(0, LedState);
+
+		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, releState);
+		//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, releState);
+		///Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, releState);
+
+		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, releState); //Heat
+		releState = (bool) !releState;
+		/* About a 3Hz on/off toggle rate */
+		vTaskDelay(configTICK_RATE_HZ*2 );
+	}
+}
+
+
 static SSP_ConfigFormat ssp_format;
 
-/* UART (or output) thread */
+
 static void vUARTTask(void *pvParameters) {
 	uint32_t tickCnt = 0;
 
+	char str[50], lastStr[50];
+	int xPos1 = 0, xPos2 = 0;
+
+
+
 	while (1) {
-		DEBUGOUT("Tick: %d, %03x 0x%x temp=%d\r\n", tickCnt, adc, ssp0, temp);
+		//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
+		sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
+		  str[25] = bFanOn? 'E':'D';
+		  str[26] = bHeatOn? 'E':'D';
+		  str[4] = str[9] = str[14] = str[19] = str[24] = str[27] = str[31] = str[35] = ' ';
+		  str[39] = 0;
+		  DEBUGSTR(str);
+		  DEBUGSTR("\r\n");
 		tickCnt++;
 
 		/* About a 1s delay here */
@@ -174,6 +219,7 @@ static void vSSPTask(void *pvParameters)
 	}
 }
 
+
 /*****************************************************************************
  * Public functions
  ****************************************************************************/
@@ -189,10 +235,14 @@ int main(void)
 	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 6, true);  //Heat
 
+	Chip_IOCON_PinMux(LPC_IOCON, 0, 9, IOCON_MODE_INACT, IOCON_FUNC0);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 9, true);  //Mute
+	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false);
+
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 
 	/* LED1 toggle thread */
-	xTaskCreate(vLEDTask1, (signed char *) "vTaskLed1",
+	xTaskCreate(vAdcTask, (signed char *) "vAdcTask",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) NULL);
 
@@ -219,6 +269,10 @@ int main(void)
 				(xTaskHandle *) NULL);
 
 	xTaskCreate(vOneWireTask, (signed char *) "vOneWireTask",
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				(xTaskHandle *) NULL);
+
+	xTaskCreate(vHeatTask, (signed char *) "vHeatTask",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) NULL);
 

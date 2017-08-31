@@ -10,4 +10,5 @@
 void vOneWireTask(void *pvParameters);
 
 extern int16_t temp;
+extern int dallasTemp;
 #endif /* ONEWIRE_H_ */

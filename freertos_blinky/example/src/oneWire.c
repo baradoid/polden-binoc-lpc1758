@@ -1,7 +1,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-int16_t temp = -990;
+//int16_t temp = -990;
+int dallasTemp = -990;
 
 int reset()
 {
@@ -76,7 +77,8 @@ uint8_t calc_crc(uint8_t *mas, uint8_t Len )
   } while( st_byt < Len ); // счетчик байтов в массиве
   return crc;
 }
-
+void controlHeat(int t);
+void controlFan();
 void vOneWireTask(void *pvParameters)
 {
 	Chip_IOCON_PinMux(LPC_IOCON, 2, 8, IOCON_MODE_INACT, IOCON_FUNC2); //tx
@@ -97,26 +99,29 @@ void vOneWireTask(void *pvParameters)
 				data[i] = readByte();
 			}
 			uint8_t crc = calc_crc(&(data[0]), 8);
-			if(crc != data[8])
-				DEBUGOUT("OW: crc not match. Repeat.\r\n");
+			if(crc != data[8]){
+				//DEBUGOUT("OW: crc not match. Repeat.\r\n");
+			}
 			else{
 				//DEBUGOUT("OW: %x %x %x %x %x %x %x %x %x crc %x\r\n",
 				//data[0],data[1],data[2],data[3],data[4],data[5],data[6],
 				//data[7],data[8], crc);
 				int8_t t = (data[0]>>4)|(data[1]<<4);
-				temp = t*10;
+				dallasTemp = t*10;
 				//DEBUGOUT("OW: %d", temp);
+
 			}
 		}
 		else{
-			temp = -990;
+			dallasTemp = -990;
 		}
 		iPresence = reset();
 		if(iPresence){
 			sendByte(0xcc); //Skip Rom
 			sendByte(0x44); //Read Scratchpad command
 		}
-		vTaskDelay(configTICK_RATE_HZ/3);
+		vTaskDelay(configTICK_RATE_HZ);
 	}
 
 }
+
