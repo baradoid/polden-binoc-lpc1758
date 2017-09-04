@@ -37,6 +37,7 @@
 #include "billValidator.h"
 #include "oneWire.h"
 #include "adcTask.h"
+#include <string.h>
 /*****************************************************************************
  * Private types/enumerations/variables
  ****************************************************************************/
@@ -133,16 +134,10 @@ static void vHeatTask(void *pvParameters)
 
 static void vReleTask(void *pvParameters) {
 
-	//Chip_IOCON_PinMux(LPC_IOCON, 2, 5, IOCON_MODE_INACT, IOCON_FUNC1);
-	//Chip_IOCON_PinMux(LPC_IOCON, 0, 3, IOCON_MODE_INACT, IOCON_FUNC1);
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0);
 
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
+	//Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
+	//vTaskDelay(configTICK_RATE_HZ*3 );
 
-
-	//Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
-	//vTaskDelay(configTICK_RATE_HZ*10 );
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
 	bool releState = false;
 
 	while (1) {
@@ -169,9 +164,67 @@ static void vReleTask(void *pvParameters) {
 	}
 }
 
+#define IN_BUF_LEN 50
+uint8_t inString[IN_BUF_LEN] = "";
+int curInStringInd = 0;
+bool readSerial()
+{
+  bool ret = false;
+  while (Chip_UART_ReadLineStatus(LPC_UART0) & UART_LSR_RDR) {
+	  uint8_t inChar = Chip_UART_ReadByte(LPC_UART0);
+    //if (isDigit(inChar)) {
+      // convert the incoming byte to a char
+      // and add it to the string:
+      inString[curInStringInd++] = (char)inChar;
+    //}
 
-static SSP_ConfigFormat ssp_format;
+      if(curInStringInd>=IN_BUF_LEN){
+    	  curInStringInd = 0;
+      }
 
+    if (inChar == '\n') {
+      //andrCpuTemp = inString.toInt();
+      //inString = "";
+    	inString[curInStringInd] = 0;
+    	curInStringInd = 0;
+      ret = true;
+      break;
+    }
+  }
+  return ret;
+}
+uint64_t lastPhoneMsgRecvTime = 0;
+bool bSoundEnable = false;
+bool isSoundEnabled()
+{
+  return bSoundEnable;
+}
+
+void soundOn()
+{
+  Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false);
+  bSoundEnable = true;
+}
+
+void soundOff()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, true);
+	bSoundEnable = false;
+}
+
+
+void resetPhone()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); //VBat
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
+	vTaskDelay(configTICK_RATE_HZ*30);
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, false); //Tacho_Fan1
+
+
+	vTaskDelay(configTICK_RATE_HZ*15);
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
+}
 
 static void vUARTTask(void *pvParameters) {
 	uint32_t tickCnt = 0;
@@ -180,10 +233,44 @@ static void vUARTTask(void *pvParameters) {
 	int xPos1 = 0, xPos2 = 0;
 
 
+	resetPhone();
 
 	while (1) {
+		if(readSerial() == true){
+		    if(strcmp((char*)inString, "reset\n") == 0){
+		      resetPhone();
+		      lastPhoneMsgRecvTime = xTaskGetTickCount();
+		    }
+		    else if(strcmp((char*)inString, "son\n") == 0){
+		      soundOn();
+		      lastPhoneMsgRecvTime = xTaskGetTickCount();
+		      //DEBUGSTR("son!!");
+		    }
+		    else if(strcmp((char*)inString, "soff\n") == 0){
+		      soundOff();
+		      lastPhoneMsgRecvTime = xTaskGetTickCount();
+		      //DEBUGSTR("soff!!");
+		    }
+//		    else if(inString.startsWith("t=") == true){
+//		      inString.remove(0, 2);
+//
+//		      andrCpuTemp = inString.toInt();
+//		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
+//		      lastPhoneMsgRecvTime = millis();
+//		    }
+//
+//		    else if(inString.startsWith("d=") == true){
+//		      inString.remove(0, 2);
+//
+//		      dallasTemp = inString.toInt();
+//		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
+//		      lastPhoneMsgRecvTime = millis();
+//		    }
+		    //inString = "";
+		}
+
 		//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
-		sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
+		sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", ssp0, xPos2, dallasTemp, sharpVal, andrCpuTemp);
 		  str[25] = bFanOn? 'E':'D';
 		  str[26] = bHeatOn? 'E':'D';
 		  str[4] = str[9] = str[14] = str[19] = str[24] = str[27] = str[31] = str[35] = ' ';
@@ -192,11 +279,17 @@ static void vUARTTask(void *pvParameters) {
 		  DEBUGSTR("\r\n");
 		tickCnt++;
 
+
+		  if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 300){
+		    resetPhone();
+		    lastPhoneMsgRecvTime = xTaskGetTickCount();
+		  }
 		/* About a 1s delay here */
 		vTaskDelay(configTICK_RATE_HZ/2);
 	}
 }
 
+static SSP_ConfigFormat ssp_format;
 static void vSSPTask(void *pvParameters)
 {
 	/* SSP initialization */
@@ -237,7 +330,18 @@ int main(void)
 
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 9, IOCON_MODE_INACT, IOCON_FUNC0);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 9, true);  //Mute
-	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false);
+	soundOff();
+
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 23, IOCON_MODE_INACT, IOCON_FUNC0); //Tacho_Fan1
+	Chip_IOCON_EnableOD(LPC_IOCON, 1, 23);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 23, true);  //Tacho_Fan1
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
+
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //VBat
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); //VBat
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
+
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 
