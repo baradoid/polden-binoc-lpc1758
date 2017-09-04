@@ -215,15 +215,20 @@ void soundOff()
 
 void resetPhone()
 {
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); //VBat
+	//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); //VBat
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 22, false); //Tacho_Fan2
 	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
-	vTaskDelay(configTICK_RATE_HZ*30);
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
+
+	vTaskDelay(configTICK_RATE_HZ*1);
+	//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
 	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, false); //Tacho_Fan1
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 22, true); //Tacho_Fan2
+	//vTaskDelay(configTICK_RATE_HZ*5);
 
 
 	vTaskDelay(configTICK_RATE_HZ*15);
 	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
+	vTaskDelay(configTICK_RATE_HZ*30);
 }
 
 static void vUARTTask(void *pvParameters) {
@@ -296,10 +301,11 @@ static void vSSPTask(void *pvParameters)
 	Board_SSP_Init(LPC_SSP0);
 
 	Chip_SSP_Init(LPC_SSP0);
+	Chip_SSP_SetBitRate(LPC_SSP0, 200000);
 
 	ssp_format.frameFormat = SSP_FRAMEFORMAT_SPI;
 	ssp_format.bits = SSP_BITS_14;
-	ssp_format.clockMode = SSP_CLOCK_MODE0;
+	ssp_format.clockMode = SSP_CLOCK_CPHA1_CPOL1;
 	Chip_SSP_SetFormat(LPC_SSP0, ssp_format.bits, ssp_format.frameFormat, ssp_format.clockMode);
 	Chip_SSP_Enable(LPC_SSP0);
 
@@ -307,8 +313,9 @@ static void vSSPTask(void *pvParameters)
 		Chip_SSP_SendFrame(LPC_SSP0, 0xabcd);
 		ssp0 = Chip_SSP_ReceiveFrame(LPC_SSP0);
 
+		ssp0 &= 0x1fff;
 		/* About a 7Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ / 14);
+		vTaskDelay(configTICK_RATE_HZ / 100);
 	}
 }
 
@@ -337,9 +344,14 @@ int main(void)
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 23, true);  //Tacho_Fan1
 	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
 
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //VBat
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); //VBat
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 22, IOCON_MODE_INACT, IOCON_FUNC0); //Tacho_Fan2
+	Chip_IOCON_EnableOD(LPC_IOCON, 1, 22);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 22, true);  //Tacho_Fan2
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 22, true); //Tacho_Fan2
+
+//	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //VBat
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
+//	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
 
 
