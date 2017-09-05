@@ -42,8 +42,8 @@
  * Private types/enumerations/variables
  ****************************************************************************/
 
-int lastAndrCpuTemp = 0, andrCpuTemp=0;
-bool bFanOn = false;
+
+//bool bFanOn = false;
 bool bHeatOn = false;
 
 uint16_t ssp0 = 0;
@@ -141,18 +141,6 @@ static void vReleTask(void *pvParameters) {
 	bool releState = false;
 
 	while (1) {
-	    if(andrCpuTemp > 30){
-	      bFanOn = true;
-	      Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, true);
-	      //digitalWrite(pinFan2Ext, LOW);
-	    }
-	    else{
-	      bFanOn = false;
-	      Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, false);
-	      //digitalWrite(pinFan2Ext, HIGH);
-	    }
-		//Board_LED_Set(0, LedState);
-
 		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, releState);
 		//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, releState);
 		///Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, releState);
@@ -212,6 +200,19 @@ void soundOff()
 	bSoundEnable = false;
 }
 
+void fanOn()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, false);
+}
+
+void fanOff()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, true);
+}
+bool isFanEnable()
+{
+	return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 5);
+}
 
 void resetPhone()
 {
@@ -228,7 +229,7 @@ void resetPhone()
 
 	vTaskDelay(configTICK_RATE_HZ*15);
 	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
-	vTaskDelay(configTICK_RATE_HZ*30);
+	//vTaskDelay(configTICK_RATE_HZ*30);
 }
 
 static void vUARTTask(void *pvParameters) {
@@ -236,6 +237,7 @@ static void vUARTTask(void *pvParameters) {
 
 	char str[50], lastStr[50];
 	int xPos1 = 0, xPos2 = 0;
+	int lastAndrCpuTemp = 0, andrCpuTemp=0;
 
 
 	resetPhone();
@@ -256,13 +258,17 @@ static void vUARTTask(void *pvParameters) {
 		      lastPhoneMsgRecvTime = xTaskGetTickCount();
 		      //DEBUGSTR("soff!!");
 		    }
-//		    else if(inString.startsWith("t=") == true){
-//		      inString.remove(0, 2);
-//
-//		      andrCpuTemp = inString.toInt();
-//		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
-//		      lastPhoneMsgRecvTime = millis();
-//		    }
+		    else if(strstr((char*)inString, "t=") != NULL){
+		    	lastPhoneMsgRecvTime = xTaskGetTickCount();
+		    	andrCpuTemp = atoi(&(inString[2]));
+		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
+			    if(andrCpuTemp > 30){
+			    	fanOn();
+			    }
+			    else{
+			    	fanOff();
+			    }
+		    }
 //
 //		    else if(inString.startsWith("d=") == true){
 //		      inString.remove(0, 2);
@@ -276,7 +282,7 @@ static void vUARTTask(void *pvParameters) {
 
 		//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
 		sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", ssp0, xPos2, dallasTemp, sharpVal, andrCpuTemp);
-		  str[25] = bFanOn? 'E':'D';
+		  str[25] = isFanEnable()? 'E':'D';
 		  str[26] = bHeatOn? 'E':'D';
 		  str[4] = str[9] = str[14] = str[19] = str[24] = str[27] = str[31] = str[35] = ' ';
 		  str[39] = 0;
@@ -285,7 +291,7 @@ static void vUARTTask(void *pvParameters) {
 		tickCnt++;
 
 
-		  if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 300){
+		  if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 1200){
 		    resetPhone();
 		    lastPhoneMsgRecvTime = xTaskGetTickCount();
 		  }
@@ -352,7 +358,14 @@ int main(void)
 //	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //VBat
 //	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
 //	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
+
+	Chip_IOCON_PinMux(LPC_IOCON, 2, 5, IOCON_MODE_INACT, IOCON_FUNC0); //fan rele
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
+	fanOn();
+
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 19, IOCON_MODE_INACT, IOCON_FUNC0); //BV pwr
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 19, true);  //fan rele
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 19, true); //Tacho_Fan2
 
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
