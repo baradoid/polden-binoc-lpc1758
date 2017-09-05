@@ -1,13 +1,5 @@
-/*
- * billValidator.h
- *
- *  Created on: 27 авг. 2017 г.
- *      Author: Dmitry
- */
-
-#ifndef BILLVALIDATOR_H_
-#define BILLVALIDATOR_H_
+#pragma once
 void vBVTask(void *pvParameters);
-
-
-#endif /* BILLVALIDATOR_H_ */
+void BVOn();
+void BVOff();
+bool isBVEnabled();

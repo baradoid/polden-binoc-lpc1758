@@ -233,7 +233,7 @@ static void vUARTTask(void *pvParameters) {
 		}
 
 		//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
-		sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", ssp0, xPos2, dallasTemp, sharpVal, andrCpuTemp);
+		sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", xPos2, ssp0, dallasTemp, sharpVal, andrCpuTemp);
 		  str[25] = isFanEnable()? 'E':'D';
 		  str[26] = bHeatOn? 'E':'D';
 		  str[4] = str[9] = str[14] = str[19] = str[24] = str[27] = str[31] = str[35] = ' ';
@@ -248,7 +248,7 @@ static void vUARTTask(void *pvParameters) {
 		    lastPhoneMsgRecvTime = xTaskGetTickCount();
 		  }
 		/* About a 1s delay here */
-		vTaskDelay(configTICK_RATE_HZ/2);
+		vTaskDelay(configTICK_RATE_HZ/100);
 	}
 }
 
@@ -315,9 +315,13 @@ int main(void)
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
 	fanOn();
 
+	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0); //heat rele
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 6, true);  //fan rele
+	heatOff();
+
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 19, IOCON_MODE_INACT, IOCON_FUNC0); //BV pwr
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 19, true);  //fan rele
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 19, true); //Tacho_Fan2
+	BVOn();
 
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);

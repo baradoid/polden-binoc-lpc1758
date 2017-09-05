@@ -38,7 +38,7 @@ void vBVTask(void *pvParameters)
 
 	Chip_UART_TXEnable(LPC_UART1);
 
-	int tickCnt = 0;
+	//int tickCnt = 0;
 	int cashCount = 0;
 
 	vTaskDelay(2*configTICK_RATE_HZ);
@@ -62,17 +62,17 @@ void vBVTask(void *pvParameters)
 			Chip_UART_ReadBlocking(LPC_UART1, &(data[0]), dataLength);
 			if(dataLength == 0x03){
 				if(data[0]==0x10){  //power up state
-					DEBUGOUT("powerUpState\r\n");
+					//DEBUGOUT("powerUpState\r\n");
 				  ccState = powerUpState;
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 				}
 				else if(data[0]==0x13){  //init state
-					DEBUGOUT("initState\r\n");
+					//DEBUGOUT("initState\r\n");
 				  ccState = initState;
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 				}
 				else if(data[0]==0x19){  //disable state
-					DEBUGOUT("disableState\r\n");
+					//DEBUGOUT("disableState\r\n");
 				  ccState = disableState;
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 				}
@@ -82,7 +82,7 @@ void vBVTask(void *pvParameters)
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 				}
 				else if(data[0]==0x15){  //accepting state
-					DEBUGOUT("acceptingState\r\n");
+					//DEBUGOUT("acceptingState\r\n");
 				  ccState = acceptingState;
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 //		              dispArr[0] = asciiTable['A'];
@@ -91,7 +91,7 @@ void vBVTask(void *pvParameters)
 //		              dispArr[3] = asciiTable['0'];
 				}
 				else if(data[0]==0x17){  //stacking state
-					DEBUGOUT("stackingState\r\n");
+					//DEBUGOUT("stackingState\r\n");
 				  ccState = stackingState;
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 //		              dispArr[0] = asciiTable['A'];
@@ -113,7 +113,7 @@ void vBVTask(void *pvParameters)
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 				}
 				else if(data[0]==0x1c){  //rejecting state
-					DEBUGOUT("rejectingState\r\n");
+					//DEBUGOUT("rejectingState\r\n");
 				  ccState = rejectingState;
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
 				}
@@ -126,12 +126,12 @@ void vBVTask(void *pvParameters)
 		  else if((xTaskGetTickCount() - lastBVPollTime) > 200){
 			  lastBVPollTime = xTaskGetTickCount();
 			  if(ccState == powerUpState){
-				  DEBUGOUT("pu-state -> reset\r\n");
+				  //DEBUGOUT("pu-state -> reset\r\n");
 				  Chip_UART_SendBlocking(LPC_UART1, &(resetReqArr[0]), 6);
 				  ccState = unknownState;
 			  }
 			  else if(ccState == disableState){
-				  DEBUGOUT("dis-state -> write bill\r\n");
+				  //DEBUGOUT("dis-state -> write bill\r\n");
 				  Chip_UART_SendBlocking(LPC_UART1, &(writeBillTypeArr[0]), 12);
 				  ccState = unknownState;
 			  }
@@ -145,5 +145,21 @@ void vBVTask(void *pvParameters)
 		  vTaskDelay(configTICK_RATE_HZ/10);
 
 	}
-	DEBUGOUT("exit BV task\r\n");
+	//DEBUGOUT("exit BV task\r\n");
 }
+
+
+void BVOn()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 19, false);
+}
+
+void BVOff()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 19, true);
+}
+bool isBVEnable()
+{
+	return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 19);
+}
+

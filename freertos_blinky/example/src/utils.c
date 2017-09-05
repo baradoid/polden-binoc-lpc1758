@@ -3,22 +3,18 @@
 #include "task.h"
 #include "gpio_17xx_40xx.h"
 
-bool bSoundEnable = false;
-bool isSoundEnabled()
-{
-  return bSoundEnable;
-}
 
 void soundOn()
 {
-  Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false);
-  bSoundEnable = true;
+	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false);
 }
-
 void soundOff()
 {
 	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, true);
-	bSoundEnable = false;
+}
+bool isSoundEnabled()
+{
+  return !Chip_GPIO_ReadPortBit(LPC_GPIO, 0, 9);;
 }
 
 void fanOn()
@@ -34,6 +30,22 @@ bool isFanEnable()
 {
 	return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 5);
 }
+
+
+void heatOn()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false);
+}
+
+void heatOff()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, true);
+}
+bool isheatEnable()
+{
+	return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 6);
+}
+
 
 void resetPhone()
 {
