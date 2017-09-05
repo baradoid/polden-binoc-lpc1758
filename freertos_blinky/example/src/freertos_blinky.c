@@ -257,16 +257,16 @@ static void vUARTTask(void *pvParameters) {
 		if(xPos1 != lastXPos1){
 			lastXPos1 = xPos1;
 		    bDataUpdated = true;
-		    sprintf(&(str[0]), "%04X", xPos1);
-		    str[4] = ' ';
+		    sprintf(&(str[5]), "%04X", xPos1);
+		    str[9] = ' ';
 		}
 
 
 		if(xPos2 != lastXPos2){
 			lastXPos2 = xPos2;
 		    bDataUpdated = true;
-		    sprintf(&(str[5]), "%04X", xPos2);
-		    str[9] = ' ';
+		    sprintf(&(str[0]), "%04X", xPos2);
+		    str[4] = ' ';
 		}
 
 		if(bDataUpdated){
