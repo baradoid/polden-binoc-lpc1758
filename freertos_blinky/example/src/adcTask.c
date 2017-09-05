@@ -71,7 +71,7 @@ void getDistance()
   //filteredDist = recalcMvToCm((int)filter(mV));
 }
 
-int sharpVal = 0;
+volatile int sharpVal = 0;
 static ADC_CLOCK_SETUP_T ADCSetup;
 void vAdcTask(void *pvParameters)
 {
@@ -99,7 +99,7 @@ void vAdcTask(void *pvParameters)
 
 		if(stat == SUCCESS){
 			//DEBUGOUT("ADC: %d\r\n", val);
-			sharpVal = val;
+			//sharpVal = val;
 			  int mV = fir(val)*0.8; //in mV
 
 			  //sharpVal = recalcMvToCm(mV);

@@ -46,8 +46,8 @@
 
 //bool bFanOn = false;
 bool bHeatOn = false;
-
-uint16_t ssp0 = 0;
+int xPos1 = 0, xPos2 = 0;
+//uint16_t ssp0 = 0;
 uint16_t adc = 0;
 /* Sets up system hardware */
 static void prvSetupHardware(void)
@@ -187,11 +187,16 @@ static void vUARTTask(void *pvParameters) {
 	uint32_t tickCnt = 0;
 
 	char str[50], lastStr[50];
-	int xPos1 = 0, xPos2 = 0;
+
+	int lastXPos1 = 0, lastXPos2 = 0;
 	int lastAndrCpuTemp = 0, andrCpuTemp=0;
 	uint64_t lastPhoneMsgRecvTime = 0;
+	bool bDataUpdated = false;
+	int lastDallasTemp = -990;
+	int sharpValLast = 0;
+	uint64_t lastDistContrTime = 0;
 
-
+	sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", xPos2, xPos1, dallasTemp, sharpVal, andrCpuTemp);
 	resetPhone();
 
 	while (1) {
@@ -232,16 +237,50 @@ static void vUARTTask(void *pvParameters) {
 		    //inString = "";
 		}
 
-		//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
-		sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", xPos2, ssp0, dallasTemp, sharpVal, andrCpuTemp);
-		  str[25] = isFanEnable()? 'E':'D';
-		  str[26] = bHeatOn? 'E':'D';
-		  str[4] = str[9] = str[14] = str[19] = str[24] = str[27] = str[31] = str[35] = ' ';
-		  str[39] = 0;
-		  DEBUGSTR(str);
-		  DEBUGSTR("\r\n");
-		tickCnt++;
+		  if((xTaskGetTickCount() - lastDistContrTime) > 50 ){
+		    lastDistContrTime = xTaskGetTickCount();
+			if(sharpVal != sharpValLast){
+				sharpValLast = sharpVal;
+				bDataUpdated = true;
+				sprintf(&(str[15]), "%04d", sharpVal);
+				str[19] = ' ';
+			}
+		  }
 
+		if(dallasTemp != lastDallasTemp){
+			lastDallasTemp = dallasTemp;
+			bDataUpdated = true;
+	        sprintf(&(str[10]), "%04d", dallasTemp);
+	        str[14] = ' ';
+		}
+
+		if(xPos1 != lastXPos1){
+			lastXPos1 = xPos1;
+		    bDataUpdated = true;
+		    sprintf(&(str[0]), "%04X", xPos1);
+		    str[4] = ' ';
+		}
+
+
+		if(xPos2 != lastXPos2){
+			lastXPos2 = xPos2;
+		    bDataUpdated = true;
+		    sprintf(&(str[5]), "%04X", xPos2);
+		    str[9] = ' ';
+		}
+
+		if(bDataUpdated){
+			bDataUpdated = false;
+			//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
+			sprintf(&(str[20]), "%04d    000 000 000", andrCpuTemp);
+			str[25] = isFanEnable()? 'E':'D';
+			str[26] = 'D'; //str[26] = bHeatOn? 'E':'D';
+			str[24] = str[27] = str[31] = str[35] = ' ';
+			str[39] = 0;
+			DEBUGSTR(str);
+			DEBUGSTR("\r\n");
+			tickCnt++;
+		}
 
 		  if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 1200){
 		    resetPhone();
@@ -269,9 +308,10 @@ static void vSSPTask(void *pvParameters)
 
 	while (1) {
 		Chip_SSP_SendFrame(LPC_SSP0, 0xabcd);
-		ssp0 = Chip_SSP_ReceiveFrame(LPC_SSP0);
+		uint16_t ssp0 = Chip_SSP_ReceiveFrame(LPC_SSP0);
 
-		ssp0 &= 0x1fff;
+		//ssp0 &= 0x1fff;
+		xPos1 = ssp0&0x1fff;
 		/* About a 7Hz on/off toggle rate */
 		vTaskDelay(configTICK_RATE_HZ / 100);
 	}
