@@ -38,6 +38,7 @@
 #include "oneWire.h"
 #include "adcTask.h"
 #include <string.h>
+#include "utils.h"
 /*****************************************************************************
  * Private types/enumerations/variables
  ****************************************************************************/
@@ -181,56 +182,6 @@ bool readSerial()
   }
   return ret;
 }
-uint64_t lastPhoneMsgRecvTime = 0;
-bool bSoundEnable = false;
-bool isSoundEnabled()
-{
-  return bSoundEnable;
-}
-
-void soundOn()
-{
-  Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false);
-  bSoundEnable = true;
-}
-
-void soundOff()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, true);
-	bSoundEnable = false;
-}
-
-void fanOn()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, false);
-}
-
-void fanOff()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, true);
-}
-bool isFanEnable()
-{
-	return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 5);
-}
-
-void resetPhone()
-{
-	//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); //VBat
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 22, false); //Tacho_Fan2
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
-
-	vTaskDelay(configTICK_RATE_HZ*1);
-	//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, false); //Tacho_Fan1
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 22, true); //Tacho_Fan2
-	//vTaskDelay(configTICK_RATE_HZ*5);
-
-
-	vTaskDelay(configTICK_RATE_HZ*15);
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
-	//vTaskDelay(configTICK_RATE_HZ*30);
-}
 
 static void vUARTTask(void *pvParameters) {
 	uint32_t tickCnt = 0;
@@ -238,6 +189,7 @@ static void vUARTTask(void *pvParameters) {
 	char str[50], lastStr[50];
 	int xPos1 = 0, xPos2 = 0;
 	int lastAndrCpuTemp = 0, andrCpuTemp=0;
+	uint64_t lastPhoneMsgRecvTime = 0;
 
 
 	resetPhone();
