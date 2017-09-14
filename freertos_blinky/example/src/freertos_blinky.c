@@ -196,7 +196,7 @@ static void vUARTTask(void *pvParameters) {
 	int sharpValLast = 0;
 	uint64_t lastDistContrTime = 0;
 
-	sprintf(str, "%04X %04X %04d %04d %04d    000 000 000", xPos2, xPos1, dallasTemp, sharpVal, andrCpuTemp);
+	sprintf(str, "%04X %04X %04d %04d %04d    000 000 000 %06d", xPos2, xPos1, dallasTemp, sharpVal, andrCpuTemp, cashCount);
 	resetPhone();
 
 	while (1) {
@@ -275,8 +275,8 @@ static void vUARTTask(void *pvParameters) {
 			sprintf(&(str[20]), "%04d    000 000 000", andrCpuTemp);
 			str[25] = isFanEnable()? 'E':'D';
 			str[26] = 'D'; //str[26] = bHeatOn? 'E':'D';
-			str[24] = str[27] = str[31] = str[35] = ' ';
-			str[39] = 0;
+			str[24] = str[27] = str[31] = str[35] = str[39] = ' ';
+			str[46] = 0;
 			DEBUGSTR(str);
 			DEBUGSTR("\r\n");
 			tickCnt++;

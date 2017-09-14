@@ -21,6 +21,7 @@ char writeBillTypeArr[] = {0x02, 0x03, 0x0C, 0x34, 0xFF, 0xFF, 0xFF, 0x00, 0x00,
 char ackArr[] = {0x02, 0x03, 0x06, 0x00, 0xc2, 0x82};
 //char *sendArr;
 char data[60];
+volatile int cashCount = 0;
 
 void vBVTask(void *pvParameters)
 {
@@ -39,7 +40,7 @@ void vBVTask(void *pvParameters)
 	Chip_UART_TXEnable(LPC_UART1);
 
 	//int tickCnt = 0;
-	int cashCount = 0;
+
 
 	vTaskDelay(2*configTICK_RATE_HZ);
 
@@ -108,6 +109,12 @@ void vBVTask(void *pvParameters)
 					cashCount +=50;
 				  if(data[1]==0x04)
 					cashCount +=100;
+				  if(data[1]==0x06)
+					cashCount +=500;
+				  if(data[1]==0x07)
+					cashCount +=1000;
+				  if(data[1]==0x08)
+					cashCount +=5000;
 
 				  DEBUGOUT("cashCount %d\r\n", cashCount);
 				  Chip_UART_SendBlocking(LPC_UART1, &(ackArr[0]), 6);
