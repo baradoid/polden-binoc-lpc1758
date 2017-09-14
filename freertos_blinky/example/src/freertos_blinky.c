@@ -195,6 +195,7 @@ static void vUARTTask(void *pvParameters) {
 	int lastDallasTemp = -990;
 	int sharpValLast = 0;
 	uint64_t lastDistContrTime = 0;
+	int lastCashCount = 0;
 
 	sprintf(str, "%04X %04X %04d %04d %04d    000 000 000 %06d", xPos2, xPos1, dallasTemp, sharpVal, andrCpuTemp, cashCount);
 	resetPhone();
@@ -267,6 +268,11 @@ static void vUARTTask(void *pvParameters) {
 		    bDataUpdated = true;
 		    sprintf(&(str[0]), "%04X", xPos2);
 		    str[4] = ' ';
+		}
+		if(cashCount != lastCashCount){
+			lastCashCount = cashCount;
+		    bDataUpdated = true;
+			sprintf(&(str[40]), "%06d", cashCount);
 		}
 
 		if(bDataUpdated){
