@@ -1,3 +1,5 @@
 /freertos_blinky/Debug
 /lpc_board_nxp_lpcxpresso_1769/Debug
 /lpc_chip_175x_6x/Debug
+*.ld
+*.map
