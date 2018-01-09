@@ -3,3 +3,5 @@
 /lpc_chip_175x_6x/Debug
 *.ld
 *.map
+*.o
+*.d
