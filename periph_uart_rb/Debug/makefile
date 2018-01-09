@@ -29,7 +29,7 @@ all: periph_uart_rb.axf
 periph_uart_rb.axf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU Linker'
-	arm-none-eabi-gcc -nostdlib -L"C:\dev\polden-vert\polden-vert-motorControl-lpc1758\lpc_chip_175x_6x\Debug" -L"C:\dev\polden-vert\polden-vert-motorControl-lpc1758\lpc_board_nxp_lpcxpresso_1769\Debug" -Xlinker -Map="periph_uart_rb.map" -Xlinker --gc-sections -mcpu=cortex-m3 -mthumb -T "periph_uart_rb_Debug.ld" -o "periph_uart_rb.axf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -nostdlib -L"C:\dev\polden-binoc\polden-binoc-lpc1758\lpc_chip_175x_6x\Debug" -L"C:\dev\polden-binoc\polden-binoc-lpc1758\lpc_board_nxp_lpcxpresso_1769\Debug" -Xlinker -Map="periph_uart_rb.map" -Xlinker --gc-sections -mcpu=cortex-m3 -mthumb -T "periph_uart_rb_Debug.ld" -o "periph_uart_rb.axf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build

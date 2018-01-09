@@ -302,7 +302,6 @@ static void vSSPTask(void *pvParameters)
 {
 	/* SSP initialization */
 	Board_SSP_Init(LPC_SSP0);
-
 	Chip_SSP_Init(LPC_SSP0);
 	Chip_SSP_SetBitRate(LPC_SSP0, 200000);
 
@@ -312,12 +311,23 @@ static void vSSPTask(void *pvParameters)
 	Chip_SSP_SetFormat(LPC_SSP0, ssp_format.bits, ssp_format.frameFormat, ssp_format.clockMode);
 	Chip_SSP_Enable(LPC_SSP0);
 
+	Board_SSP_Init(LPC_SSP1);
+	Chip_SSP_Init(LPC_SSP1);
+	Chip_SSP_SetBitRate(LPC_SSP1, 200000);
+
+	Chip_SSP_SetFormat(LPC_SSP1, ssp_format.bits, ssp_format.frameFormat, ssp_format.clockMode);
+	Chip_SSP_Enable(LPC_SSP1);
+
 	while (1) {
 		Chip_SSP_SendFrame(LPC_SSP0, 0xabcd);
 		uint16_t ssp0 = Chip_SSP_ReceiveFrame(LPC_SSP0);
 
 		//ssp0 &= 0x1fff;
 		xPos1 = ssp0&0x1fff;
+
+		Chip_SSP_SendFrame(LPC_SSP1, 0xabcd);
+		uint16_t ssp1 = Chip_SSP_ReceiveFrame(LPC_SSP1);
+
 		/* About a 7Hz on/off toggle rate */
 		vTaskDelay(configTICK_RATE_HZ / 100);
 	}
