@@ -4,47 +4,26 @@
 #include "gpio_17xx_40xx.h"
 
 
-void soundOn()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false);
-}
-void soundOff()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, true);
-}
-bool isSoundEnabled()
-{
-  return !Chip_GPIO_ReadPortBit(LPC_GPIO, 0, 9);;
-}
+void soundOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, false); }
+void soundOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 0, 9, true); }
+bool isSoundEnabled() { return !Chip_GPIO_ReadPortBit(LPC_GPIO, 0, 9); }
 
-void fanOn()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, false);
-}
-
-void fanOff()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, true);
-}
-bool isFanEnable()
-{
-	return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 5);
-}
+void fanOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); }
+void fanOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); }
+bool isFanEnable() { return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 0); }
 
 
-void heatOn()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false);
-}
+void heatOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false);}
+void heatOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, true); }
+bool isheatEnable(){ return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 6); }
 
-void heatOff()
-{
-	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, true);
-}
-bool isheatEnable()
-{
-	return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 6);
-}
+void batPwrOn(){ Chip_GPIO_WritePortBit(LPC_GPIO, 1, 9, false); }
+void batPwrOff(){ Chip_GPIO_WritePortBit(LPC_GPIO, 1, 9, true); }
+bool isBatPwrOn() { return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 9); }
+
+void usbOn(){ Chip_GPIO_WritePortBit(LPC_GPIO, 1, 1, false); }
+void usbOff(){ Chip_GPIO_WritePortBit(LPC_GPIO, 1, 1, true); }
+bool isUsbOn(){ return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 1); }
 
 
 void resetPhone()

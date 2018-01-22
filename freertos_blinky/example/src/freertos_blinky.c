@@ -227,7 +227,25 @@ static void vUARTTask(void *pvParameters) {
 			    	fanOff();
 			    }
 		    }
-//
+		    else if(strstr((char*)inString, "fanOn\n") != NULL){
+		    	fanOn();
+		    }
+		    else if(strstr((char*)inString, "fanOff\n") != NULL){
+		    	fanOff();
+		    }
+		    else if(strstr((char*)inString, "pwrOn\n") != NULL){
+		    	batPwrOff();
+		    }
+		    else if(strstr((char*)inString, "pwrOff\n") != NULL){
+		    	batPwrOn();
+		    }
+		    else if(strstr((char*)inString, "usbOn\n") != NULL){
+		    	usbOn();
+		    }
+		    else if(strstr((char*)inString, "usbOff\n") != NULL){
+		    	usbOff();
+		    }
+
 //		    else if(inString.startsWith("d=") == true){
 //		      inString.remove(0, 2);
 //
@@ -367,8 +385,8 @@ int main(void)
 //	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
 //	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
 
-	Chip_IOCON_PinMux(LPC_IOCON, 2, 5, IOCON_MODE_INACT, IOCON_FUNC0); //fan rele
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 5, true);  //fan rele
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //fan rele
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //fan rele
 	fanOn();
 
 	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0); //heat rele
@@ -379,6 +397,11 @@ int main(void)
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 19, true);  //fan rele
 	BVOn();
 
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 9, IOCON_MODE_INACT, IOCON_FUNC0); //bat pwr
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 9, true);  //bat rele
+
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 1, IOCON_MODE_INACT, IOCON_FUNC0); //usb pwr
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 1, true);  //usb pwr rele
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 

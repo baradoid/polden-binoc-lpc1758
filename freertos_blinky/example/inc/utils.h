@@ -14,4 +14,12 @@ void heatOn();
 void heatOff();
 void isHeatEnable();
 
+void batPwrOn();
+void batPwrOff();
+bool isBatPwrOn();
+
+void usbOn();
+void usbOff();
+bool isUsbOn();
+
 void resetPhone();
