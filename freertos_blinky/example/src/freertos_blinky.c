@@ -234,10 +234,10 @@ static void vUARTTask(void *pvParameters) {
 		    	fanOff();
 		    }
 		    else if(strstr((char*)inString, "pwrOn\n") != NULL){
-		    	batPwrOff();
+		    	batPwrOn();
 		    }
 		    else if(strstr((char*)inString, "pwrOff\n") != NULL){
-		    	batPwrOn();
+		    	batPwrOff();
 		    }
 		    else if(strstr((char*)inString, "usbOn\n") != NULL){
 		    	usbOn();
@@ -245,7 +245,12 @@ static void vUARTTask(void *pvParameters) {
 		    else if(strstr((char*)inString, "usbOff\n") != NULL){
 		    	usbOff();
 		    }
-
+		    else if(strstr((char*)inString, "audioOn\n") != NULL){
+		    	soundOn();
+		    }
+		    else if(strstr((char*)inString, "audioOff\n") != NULL){
+		    	soundOff();
+		    }
 //		    else if(inString.startsWith("d=") == true){
 //		      inString.remove(0, 2);
 //
@@ -367,8 +372,8 @@ int main(void)
 	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 6, true);  //Heat
 
-	Chip_IOCON_PinMux(LPC_IOCON, 0, 9, IOCON_MODE_INACT, IOCON_FUNC0);
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 9, true);  //Mute
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 10, IOCON_MODE_INACT, IOCON_FUNC0);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 10, true);  //Mute
 	soundOff();
 
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 23, IOCON_MODE_INACT, IOCON_FUNC0); //Tacho_Fan1
@@ -428,9 +433,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2UL),
 				(xTaskHandle *) NULL);
 
-	xTaskCreate(vBVTask, (signed char *) "vBVTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vBVTask, (signed char *) "vBVTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
 	xTaskCreate(vOneWireTask, (signed char *) "vOneWireTask",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),

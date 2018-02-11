@@ -6,15 +6,15 @@ int dallasTemp = -990;
 
 int reset()
 {
-	Chip_UART_SetBaud(LPC_UART2, 9600);
+	Chip_UART_SetBaud(LPC_UART1, 9600);
 
-	while((Chip_UART_ReadLineStatus(LPC_UART2) & UART_LSR_RDR) != 0){
-		Chip_UART_ReadByte(LPC_UART2);
+	while((Chip_UART_ReadLineStatus(LPC_UART1) & UART_LSR_RDR) != 0){
+		Chip_UART_ReadByte(LPC_UART1);
 	}
 
-	Chip_UART_SendByte(LPC_UART2, 0xf0);
-	while((Chip_UART_ReadLineStatus(LPC_UART2) & UART_LSR_RDR) == 0) ;
-	uint8_t rb = Chip_UART_ReadByte(LPC_UART2);
+	Chip_UART_SendByte(LPC_UART1, 0xf0);
+	while((Chip_UART_ReadLineStatus(LPC_UART1) & UART_LSR_RDR) == 0) ;
+	uint8_t rb = Chip_UART_ReadByte(LPC_UART1);
 	//DEBUGOUT("OW: presence byte %x\r\n", rb);
 	int iPresence = 0;
 	if(rb!=0xf0)
@@ -24,7 +24,7 @@ int reset()
 }
 void sendByte(uint8_t ch)
 {
-	Chip_UART_SetBaud(LPC_UART2, 115200);
+	Chip_UART_SetBaud(LPC_UART1, 115200);
 
 	for(int i=0; i<8; i++){
 		uint8_t d = 0;
@@ -32,22 +32,22 @@ void sendByte(uint8_t ch)
 			d=0xff;
 		else
 			d=0x00;
-		while(Chip_UART_CheckBusy(LPC_UART2) == SET );
-			Chip_UART_SendByte(LPC_UART2, d);
-		while((Chip_UART_ReadLineStatus(LPC_UART2) & UART_LSR_RDR) == 0) ;
-			Chip_UART_ReadByte(LPC_UART2);
+		while(Chip_UART_CheckBusy(LPC_UART1) == SET );
+			Chip_UART_SendByte(LPC_UART1, d);
+		while((Chip_UART_ReadLineStatus(LPC_UART1) & UART_LSR_RDR) == 0) ;
+			Chip_UART_ReadByte(LPC_UART1);
 	}
 }
 
 uint8_t readByte()
 {
 	uint8_t d = 0;
-	Chip_UART_SetBaud(LPC_UART2, 115200);
+	Chip_UART_SetBaud(LPC_UART1, 115200);
 	for(int i=0; i<8; i++){
-		while(Chip_UART_CheckBusy(LPC_UART2) == SET );
-			Chip_UART_SendByte(LPC_UART2, 0xff);
-		while((Chip_UART_ReadLineStatus(LPC_UART2) & UART_LSR_RDR) == 0) ;
-		uint8_t rb = Chip_UART_ReadByte(LPC_UART2);
+		while(Chip_UART_CheckBusy(LPC_UART1) == SET );
+			Chip_UART_SendByte(LPC_UART1, 0xff);
+		while((Chip_UART_ReadLineStatus(LPC_UART1) & UART_LSR_RDR) == 0) ;
+		uint8_t rb = Chip_UART_ReadByte(LPC_UART1);
 		if(rb == 0xff)
 			d |= (1<<i);
 	}
@@ -81,13 +81,13 @@ void controlHeat(int t);
 void controlFan();
 void vOneWireTask(void *pvParameters)
 {
-	Chip_IOCON_PinMux(LPC_IOCON, 2, 8, IOCON_MODE_INACT, IOCON_FUNC2); //tx
-	Chip_IOCON_PinMux(LPC_IOCON, 2, 9, IOCON_MODE_INACT, IOCON_FUNC2); //rx
-	Chip_IOCON_EnableOD(LPC_IOCON, 2, 8);
+	Chip_IOCON_PinMux(LPC_IOCON, 2, 0, IOCON_MODE_INACT, IOCON_FUNC2); //tx
+	Chip_IOCON_PinMux(LPC_IOCON, 2, 1, IOCON_MODE_INACT, IOCON_FUNC2); //rx
+	Chip_IOCON_EnableOD(LPC_IOCON, 2, 0);
 
-	Chip_UART_Init(LPC_UART2);
+	Chip_UART_Init(LPC_UART1);
 	//Chip_UART_SetBaud(LPC_UART2, 9600);
-	Chip_UART_TXEnable(LPC_UART2);
+	Chip_UART_TXEnable(LPC_UART1);
 	uint8_t data[9];
 	for(;;){
 		int iPresence = reset();
