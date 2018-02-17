@@ -350,6 +350,7 @@ static void vSSPTask(void *pvParameters)
 
 		Chip_SSP_SendFrame(LPC_SSP1, 0xabcd);
 		uint16_t ssp1 = Chip_SSP_ReceiveFrame(LPC_SSP1);
+		xPos2 = ssp1&0x1fff;
 
 		/* About a 7Hz on/off toggle rate */
 		vTaskDelay(configTICK_RATE_HZ / 100);
