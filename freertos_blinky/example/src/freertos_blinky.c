@@ -89,7 +89,7 @@ static void vReleTask(void *pvParameters) {
 	while (1) {
 		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 5, releState);
 		//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, releState);
-		Chip_GPIO_WritePortBit(LPC_GPIO, 1, 9, releState);
+		//Chip_GPIO_WritePortBit(LPC_GPIO, 1, 9, releState);
 
 		//Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, releState); //Heat
 		releState = (bool) !releState;
