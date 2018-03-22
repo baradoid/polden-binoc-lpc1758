@@ -88,11 +88,46 @@ void Board_SetupMuxing(void)
 {
 	Chip_IOCON_SetPinMuxing(LPC_IOCON, pinmuxing, sizeof(pinmuxing) / sizeof(PINMUX_GRP_T));
 }
+void Chip_SetupXtalClockingCust(void)
+{
+	/* Disconnect the Main PLL if it is connected already */
+	if (Chip_Clock_IsMainPLLConnected()) {
+		Chip_Clock_DisablePLL(SYSCTL_MAIN_PLL, SYSCTL_PLL_CONNECT);
+	}
+
+	/* Disable the PLL if it is enabled */
+	if (Chip_Clock_IsMainPLLEnabled()) {
+		Chip_Clock_DisablePLL(SYSCTL_MAIN_PLL, SYSCTL_PLL_ENABLE);
+	}
+
+	/* Enable the crystal */
+	if (!Chip_Clock_IsCrystalEnabled())
+		Chip_Clock_EnableCrystal();
+	while(!Chip_Clock_IsCrystalEnabled()) {}
+
+	/* Set PLL0 Source to Crystal Oscillator */
+	Chip_Clock_SetCPUClockDiv(0);
+	Chip_Clock_SetMainPLLSource(SYSCTL_PLLCLKSRC_MAINOSC);
+
+	/* FCCO = ((5+1) * 2 * 25MHz) / (0+1) = 300 MHz */
+	/* FCCO = ((6+1) * 2 * 25MHz) / (0+1) = 320 MHz */
+	/* FCCO = ((15+1) * 2 * 12MHz) / (0+1) = 384MHz */
+	Chip_Clock_SetupPLL(SYSCTL_MAIN_PLL, 15, 0);
+
+	Chip_Clock_EnablePLL(SYSCTL_MAIN_PLL, SYSCTL_PLL_ENABLE);
+
+	/* 300MHz / (4+1) = 60MHz */
+	/* 384MHz / (3+1) = 96MHz */
+	Chip_Clock_SetCPUClockDiv(3);
+	while (!Chip_Clock_IsMainPLLLocked()) {} /* Wait for the PLL to Lock */
+
+	Chip_Clock_EnablePLL(SYSCTL_MAIN_PLL, SYSCTL_PLL_CONNECT);
+}
 
 /* Setup system clocking */
 void Board_SetupClocking(void)
 {
-	//Chip_SetupXtalClocking();
+	//Chip_SetupXtalClockingCust();
 	Chip_SetupIrcClocking();
 
 	/* Setup FLASH access to 4 clocks (100MHz clock) */
