@@ -78,9 +78,21 @@ static void prvSetupHardware(void)
 //}
 
 
-static void vReleTask(void *pvParameters) {
+static void vReleTask(void *pvParameters)
+{
+	fanOn();
+	usbOff();
+	batPwrOff();
+
+	vTaskDelay(configTICK_RATE_HZ*2 );
+	batPwrOn();
+	vTaskDelay(configTICK_RATE_HZ/10 );
+	usbOn();
+	vTaskDelay(configTICK_RATE_HZ*5 );
+	usbOff();
 
 
+	fanOff();
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
 	//vTaskDelay(configTICK_RATE_HZ*3 );
 
@@ -136,7 +148,7 @@ int main(void)
 
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //fan rele
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //fan rele
-	fanOn();
+
 
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 8, IOCON_MODE_INACT, IOCON_FUNC0); //heat
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 8, true);  //heat
