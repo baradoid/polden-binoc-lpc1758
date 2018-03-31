@@ -72,7 +72,7 @@ void getDistance()
 }
 
 volatile int sharpVal = 0;
-static ADC_CLOCK_SETUP_T ADCSetup;
+
 void vAdcTask(void *pvParameters)
 {
 	Chip_IOCON_PinMux(LPC_IOCON, 0, 25, IOCON_MODE_INACT, IOCON_FUNC1);
@@ -83,34 +83,66 @@ void vAdcTask(void *pvParameters)
 //	adcSetupStr.adcRate =  ADC_MAX_SAMPLE_RATE;
 //	adcSetupStr.bitsAccuracy = 12;
 //	adcSetupStr.burstMode = false;
+	ADC_CLOCK_SETUP_T ADCSetup;
+	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_ADC);
 	Chip_ADC_Init(LPC_ADC, &ADCSetup);
+	//Chip_ADC_SetSampleRate(LPC_ADC, &ADCSetup, 100);
 	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH2, ENABLE);
+	Chip_ADC_SetBurstCmd(LPC_ADC, ENABLE);
+//	uint32_t cr = 0;
+//	cr |= ADC_CR_CLKDIV(100);
+//	cr |= ADC_CR_CH_SEL(ADC_CH2);
+//	//cr |= ADC_CR_BURST;
+//	cr |= ADC_CR_PDN;
+//	LPC_ADC->CR = cr;
 	//bool LedState = false;
+	DEBUGOUT("ADC periph clock %d \r\n", Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_ADC));
 
-
-	Chip_ADC_SetBurstCmd(LPC_ADC, DISABLE);
 	uint16_t val;
+	//int iPass =0;
 	Status stat;
 	while (1) {
-		Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
-		while (Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_DONE_STAT) != SET) {}
+		bool overrun = false;
+		int waitCount = 0;
+		uint32_t averVal = 0;
+		for(int i=0; i<1000; i++){
+			while (Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_DONE_STAT) != SET) {
+				//DEBUGOUT("ADC: wait\r\n");
+				waitCount++;
+				vTaskDelay(0);
+			}
+			if(Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_OVERRUN_STAT) == SET){
+				//DEBUGOUT("ADC: overrun\r\n");
+				overrun = true;
+			}
+			stat = Chip_ADC_ReadValue(LPC_ADC, ADC_CH2, &val);
+			averVal+=val;
 
-		stat = Chip_ADC_ReadValue(LPC_ADC, ADC_CH2, &val);
+		}
+		averVal/=1000;
+		//stat = SUCCESS;
+		//val = ADC_DR_RESULT(LPC_ADC->GDR);
+		//chn = (LPC_ADC->GDR>>24)&0x3;
 
 		if(stat == SUCCESS){
-			//DEBUGOUT("ADC: %d\r\n", val);
+//			if(averVal > 400){
+//				DEBUGOUT("ADC: %d wc:%d %s\r\n", averVal, waitCount, overrun? "overrun":"");
+//			}
 			//sharpVal = val;
 			  int mV = fir(val)*0.8; //in mV
 
 			  //sharpVal = recalcMvToCm(mV);
 			  sharpVal = recalcMvToCm(mV);
+//			  if (sharpVal < 25){
+//				  DEBUGOUT("sharpVal: %d iPass:%d\r\n", sharpVal, iPass++);
+//			  }
 		}
 		else{
 			DEBUGOUT("ADC error\r\n");
 
 		}
 
-
+		//vTaskDelay(configTICK_RATE_HZ / 20);
 		vTaskDelay(configTICK_RATE_HZ / 20);
 	}
 }

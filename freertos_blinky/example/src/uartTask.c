@@ -87,7 +87,7 @@ void vUARTTask(void *pvParameters)
 		    	lastPhoneMsgRecvTime = xTaskGetTickCount();
 		    	andrCpuTemp = atoi(&(inString[2]));
 		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
-			    if(andrCpuTemp > 30){
+			    if(andrCpuTemp > 40){
 			    	fanOn();
 			    }
 			    else{
@@ -185,7 +185,7 @@ void vUARTTask(void *pvParameters)
 		}
 
 		  if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 1200){
-		    resetPhone();
+		    //resetPhone();
 		    lastPhoneMsgRecvTime = xTaskGetTickCount();
 		  }
 		/* About a 1s delay here */

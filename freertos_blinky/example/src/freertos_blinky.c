@@ -79,8 +79,19 @@ static void prvSetupHardware(void)
 
 
 static void vReleTask(void *pvParameters) {
+	fanOn();
+	usbOff();
+	batPwrOff();
+
+	vTaskDelay(configTICK_RATE_HZ*2 );
+	batPwrOn();
+	vTaskDelay(configTICK_RATE_HZ/10 );
+	usbOn();
+	vTaskDelay(configTICK_RATE_HZ*5 );
+	usbOff();
 
 
+	fanOff();
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
 	//vTaskDelay(configTICK_RATE_HZ*3 );
 
@@ -155,8 +166,7 @@ int main(void)
 
 
 
-//	printf("s");
-//	while(1);
+
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 
 	/* LED1 toggle thread */
