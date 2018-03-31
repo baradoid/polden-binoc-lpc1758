@@ -135,7 +135,7 @@ int main(void)
 //	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
 
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //fan rele
-	Chip_IOCON_EnableOD(LPC_IOCON, 1, 0);
+	//Chip_IOCON_EnableOD(LPC_IOCON, 1, 0);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //fan rele
 	fanOn();
 
