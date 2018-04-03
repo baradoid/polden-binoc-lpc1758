@@ -129,7 +129,7 @@ void vAdcTask(void *pvParameters)
 //				DEBUGOUT("ADC: %d wc:%d %s\r\n", averVal, waitCount, overrun? "overrun":"");
 //			}
 			//sharpVal = val;
-			  int mV = fir(val)*0.8; //in mV
+			  int mV = fir(averVal)*0.8; //in mV
 
 			  //sharpVal = recalcMvToCm(mV);
 			  sharpVal = recalcMvToCm(mV);
