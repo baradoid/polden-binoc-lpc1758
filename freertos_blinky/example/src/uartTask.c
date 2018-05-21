@@ -8,6 +8,7 @@
 #include "board.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
 #include "sspTask.h"
 #include "oneWire.h"
@@ -22,6 +23,7 @@
 #define IN_BUF_LEN 50
 uint8_t inString[IN_BUF_LEN] = "";
 int curInStringInd = 0;
+
 bool readSerial()
 {
   bool ret = false;
@@ -49,6 +51,8 @@ bool readSerial()
   return ret;
 }
 
+extern xSemaphoreHandle xUartTaskSemaphore;
+
 void vUARTTask(void *pvParameters)
 {
 	uint32_t tickCnt = 0;
@@ -68,6 +72,10 @@ void vUARTTask(void *pvParameters)
 	//resetPhone();
 
 	while (1) {
+		if(xSemaphoreTake(xUartTaskSemaphore, configTICK_RATE_HZ/200) == true){
+			//DEBUGSTR("sem taked\r\n");
+			//bDataUpdated = true;
+		}
 		if(readSerial() == true){
 		    if(strcmp((char*)inString, "reset\n") == 0){
 		      resetPhone();
@@ -188,8 +196,8 @@ void vUARTTask(void *pvParameters)
 		    //resetPhone();
 		    lastPhoneMsgRecvTime = xTaskGetTickCount();
 		  }
-		/* About a 1s delay here */
-		vTaskDelay(configTICK_RATE_HZ/100);
+
+		//vTaskDelay(configTICK_RATE_HZ/200);
 	}
 }
 

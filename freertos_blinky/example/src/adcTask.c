@@ -2,6 +2,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "stdlib.h"
+#include "semphr.h"
+
+extern xSemaphoreHandle xUartTaskSemaphore;
+
 double filter(int d)
 {
   static double acc = 0;
@@ -100,6 +104,7 @@ void vAdcTask(void *pvParameters)
 
 	uint16_t val;
 	//int iPass =0;
+	int lastSharpVal = 0;
 	Status stat;
 	while (1) {
 		bool overrun = false;
@@ -141,6 +146,11 @@ void vAdcTask(void *pvParameters)
 			DEBUGOUT("ADC error\r\n");
 
 		}
+		if(sharpVal != lastSharpVal){
+			//xSemaphoreGive( xUartTaskSemaphore );
+			lastSharpVal = sharpVal;
+		}
+
 
 		//vTaskDelay(configTICK_RATE_HZ / 20);
 		vTaskDelay(configTICK_RATE_HZ / 20);

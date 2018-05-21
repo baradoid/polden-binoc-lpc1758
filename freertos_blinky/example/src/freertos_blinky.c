@@ -32,6 +32,7 @@
 #include "board.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
 #include "gpio_17xx_40xx.h"
 #include "billValidator.h"
@@ -120,6 +121,8 @@ static void vReleTask(void *pvParameters) {
  * @brief	main routine for FreeRTOS blinky example
  * @return	Nothing, function should not exit
  */
+xSemaphoreHandle xUartTaskSemaphore = NULL;
+
 int main(void)
 {
 	prvSetupHardware();
@@ -168,6 +171,8 @@ int main(void)
 
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
+
+	vSemaphoreCreateBinary( xUartTaskSemaphore );
 
 	/* LED1 toggle thread */
 	xTaskCreate(vAdcTask, (signed char *) "vAdcTask",
