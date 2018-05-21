@@ -42,6 +42,7 @@
 #include "uartTask.h"
 #include <string.h>
 #include "utils.h"
+#include "sensorTask.h"
 
 /*****************************************************************************
  * Private types/enumerations/variables
@@ -164,6 +165,8 @@ int main(void)
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 1, IOCON_MODE_INACT, IOCON_FUNC0); //usb pwr
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 1, true);  //usb pwr rele
 
+	Chip_IOCON_PinMux(LPC_IOCON, 0, 11, IOCON_MODE_INACT, IOCON_FUNC0);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 11, false);
 
 
 
@@ -204,6 +207,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) NULL);
 
+	xTaskCreate(vSensorTask, (signed char *) "vSensorTask",
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				(xTaskHandle *) NULL);
 	/* Start the scheduler */
 	vTaskStartScheduler();
 
