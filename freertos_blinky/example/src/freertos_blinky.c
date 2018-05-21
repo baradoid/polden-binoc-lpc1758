@@ -85,9 +85,9 @@ static void vReleTask(void *pvParameters) {
 
 	vTaskDelay(configTICK_RATE_HZ*2 );
 	batPwrOn();
-	vTaskDelay(configTICK_RATE_HZ/10 );
+	vTaskDelay(configTICK_RATE_HZ*2 );
 	usbOn();
-	vTaskDelay(configTICK_RATE_HZ*5 );
+	vTaskDelay(configTICK_RATE_HZ*10 );
 	usbOff();
 
 

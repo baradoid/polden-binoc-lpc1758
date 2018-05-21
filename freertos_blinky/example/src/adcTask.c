@@ -96,7 +96,7 @@ void vAdcTask(void *pvParameters)
 //	cr |= ADC_CR_PDN;
 //	LPC_ADC->CR = cr;
 	//bool LedState = false;
-	DEBUGOUT("ADC periph clock %d \r\n", Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_ADC));
+	//DEBUGOUT("ADC periph clock %d \r\n", Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_ADC));
 
 	uint16_t val;
 	//int iPass =0;

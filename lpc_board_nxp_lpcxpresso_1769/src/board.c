@@ -89,7 +89,7 @@ void Board_Debug_Init(void)
 	Board_UART_Init(DEBUG_UART);
 
 	Chip_UART_Init(DEBUG_UART);
-	Chip_UART_SetBaud(DEBUG_UART, 115200);
+	Chip_UART_SetBaud(DEBUG_UART, 14400);
 	Chip_UART_ConfigData(DEBUG_UART, UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS);
 
 	/* Enable UART Transmit */

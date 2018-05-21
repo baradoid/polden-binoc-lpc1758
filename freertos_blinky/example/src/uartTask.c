@@ -64,8 +64,10 @@ void vUARTTask(void *pvParameters)
 	uint64_t lastDistContrTime = 0;
 	int lastCashCount = 0;
 
-	sprintf(str, "%04X %04X %04d %04d %04d    000 000 000 %06d", xPos2, xPos1, dallasTemp, sharpVal, andrCpuTemp, cashCount);
+	sprintf(str, "%04X %04X %04d", xPos2, xPos1, sharpVal);
 	//resetPhone();
+
+	//DEBUGOUT("strLen %d", strlen(str));
 
 	while (1) {
 		if(readSerial() == true){
@@ -139,48 +141,49 @@ void vUARTTask(void *pvParameters)
 			if(sharpVal != sharpValLast){
 				sharpValLast = sharpVal;
 				bDataUpdated = true;
-				sprintf(&(str[15]), "%04d", sharpVal);
-				str[19] = ' ';
+				//sprintf(&(str[15]), "%04d", sharpVal);
+				//str[19] = ' ';
 			}
 		  }
 
-		if(dallasTemp != lastDallasTemp){
-			lastDallasTemp = dallasTemp;
-			bDataUpdated = true;
-	        sprintf(&(str[10]), "%04d", dallasTemp);
-	        str[14] = ' ';
-		}
+//		if(dallasTemp != lastDallasTemp){
+//			lastDallasTemp = dallasTemp;
+//			bDataUpdated = true;
+//	        sprintf(&(str[10]), "%04d", dallasTemp);
+//	        str[14] = ' ';
+//		}
 
 		if(xPos1 != lastXPos1){
 			lastXPos1 = xPos1;
 		    bDataUpdated = true;
-		    sprintf(&(str[5]), "%04X", xPos1);
-		    str[9] = ' ';
+		    //sprintf(&(str[5]), "%04X", xPos1);
+		    //str[9] = ' ';
 		}
 
 
 		if(xPos2 != lastXPos2){
 			lastXPos2 = xPos2;
 		    bDataUpdated = true;
-		    sprintf(&(str[0]), "%04X", xPos2);
-		    str[4] = ' ';
+		    //sprintf(&(str[0]), "%04X", xPos2);
+		    //str[4] = ' ';
 		}
-		if(cashCount != lastCashCount){
-			lastCashCount = cashCount;
-		    bDataUpdated = true;
-			sprintf(&(str[40]), "%06d", cashCount);
-		}
+//		if(cashCount != lastCashCount){
+//			lastCashCount = cashCount;
+//		    bDataUpdated = true;
+//			sprintf(&(str[40]), "%06d", cashCount);
+//		}
 
 		if(bDataUpdated){
 			bDataUpdated = false;
+			sprintf(str, "%04X %04X %04d\r\n", xPos2, xPos1, sharpVal);
 			//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
-			sprintf(&(str[20]), "%04d    000 000 000", andrCpuTemp);
-			str[25] = isFanEnable()? 'E':'D';
-			str[26] = 'D'; //str[26] = bHeatOn? 'E':'D';
-			str[24] = str[27] = str[31] = str[35] = str[39] = ' ';
-			str[46] = 0;
+			//sprintf(&(str[20]), "%04d    000 000 000", andrCpuTemp);
+			//str[25] = isFanEnable()? 'E':'D';
+			//str[26] = 'D'; //str[26] = bHeatOn? 'E':'D';
+			//str[24] = str[27] = str[31] = str[35] = str[39] = ' ';
+			//str[46] = 0;
 			DEBUGSTR(str);
-			DEBUGSTR("\r\n");
+			//DEBUGSTR("\r\n");
 			tickCnt++;
 		}
 
