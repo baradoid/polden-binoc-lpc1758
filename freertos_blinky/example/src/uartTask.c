@@ -14,6 +14,7 @@
 #include "adcTask.h"
 #include "billValidator.h"
 #include "utils.h"
+#include "sensorTask.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -49,6 +50,7 @@ bool readSerial()
   return ret;
 }
 
+bool lastBut[7];
 void vUARTTask(void *pvParameters)
 {
 	uint32_t tickCnt = 0;
@@ -66,6 +68,8 @@ void vUARTTask(void *pvParameters)
 
 	sprintf(str, "%04X %04X %04d %04d %04d    000 000 000 %06d", xPos2, xPos1, dallasTemp, sharpVal, andrCpuTemp, cashCount);
 	//resetPhone();
+
+
 
 	while (1) {
 		if(readSerial() == true){
@@ -171,6 +175,14 @@ void vUARTTask(void *pvParameters)
 			sprintf(&(str[40]), "%06d", cashCount);
 		}
 
+
+		for(int i=0; i<7; i++){
+			if(lastBut[i] != but[i]){
+				lastBut[i] = but[i];
+				bDataUpdated = true;
+			}
+		}
+
 		if(bDataUpdated){
 			bDataUpdated = false;
 			//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
@@ -179,6 +191,12 @@ void vUARTTask(void *pvParameters)
 			str[26] = 'D'; //str[26] = bHeatOn? 'E':'D';
 			str[24] = str[27] = str[31] = str[35] = str[39] = ' ';
 			str[46] = 0;
+
+			int v = 0;
+			for(int i=0; i<7; i++){
+				v |= ((but[i]?1:0)<<i);
+			}
+			sprintf(&(str[0]), "%04X %04X %04d %02X", xPos1, xPos2, sharpVal, v);
 			DEBUGSTR(str);
 			DEBUGSTR("\r\n");
 			tickCnt++;

@@ -2,9 +2,12 @@
 #include "task.h"
 
 #define SENSOR_COUNTER 20
+bool but[7];
+
 int checkPin(int port, int pin)
 {
 	uint32_t vals[SENSOR_COUNTER];
+	LPC_GPIO_T *pPort = LPC_GPIO + port;
 	Chip_IOCON_PinMux(LPC_IOCON, port, pin, IOCON_MODE_INACT, IOCON_FUNC0); //40
 	Chip_GPIO_SetPinOutLow(LPC_GPIO, port, pin);
 	//Chip_GPIO_SetPinOutHigh(LPC_GPIO, port, pin);
@@ -13,7 +16,7 @@ int checkPin(int port, int pin)
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 11, true);
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 11, false);
 	for(int i=0; i<SENSOR_COUNTER; i++){
-		vals[i] = LPC_GPIO->PIN;
+		vals[i] = pPort->PIN;
 //		if(Chip_GPIO_GetPinState(LPC_GPIO, port, pin)){
 //			if(i>1){
 //				//DEBUGOUT("sens0: %d\r\n", i);
@@ -52,17 +55,49 @@ void vSensorTask(void *pvParameters)
 		taskENTER_CRITICAL();
 		int val = 0;
 		val = checkPin(0, 11);
+		but[0] = (val>0);
 		if(val > 0){
-			DEBUGOUT("sens0: %d\r\n", val);
+			//DEBUGOUT("sens0: %d\r\n", val);
 		}
+
 		val = checkPin(0, 10);
+		but[1] = (val>0);
 		if(val > 0){
-			DEBUGOUT("sens1: %d\r\n", val);
+			//DEBUGOUT("sens1: %d\r\n", val);
 		}
+
+		val = checkPin(0, 0);
+		but[2] = (val>0);
+		if(val > 0){
+			//DEBUGOUT("sens2: %d\r\n", val);
+		}
+
 		val = checkPin(0, 1);
+		but[3] = (val>0);
 		if(val > 0){
-			DEBUGOUT("sens2: %d\r\n", val);
+			//DEBUGOUT("sens2: %d\r\n", val);
 		}
+
+
+
+		val = checkPin(1, 29);
+		but[4] = (val>0);
+		if(val > 0){
+			//DEBUGOUT("sens2: %d\r\n", val);
+		}
+
+		val = checkPin(1, 28);
+		but[5] = (val>0);
+		if(val > 0){
+			//DEBUGOUT("sens2: %d\r\n", val);
+		}
+
+		val = checkPin(1, 26);
+		but[6] = (val>0);
+		if(val > 0){
+			//DEBUGOUT("sens2: %d\r\n", val);
+		}
+
 		taskEXIT_CRITICAL();
 
 		vTaskDelay(configTICK_RATE_HZ / 50);

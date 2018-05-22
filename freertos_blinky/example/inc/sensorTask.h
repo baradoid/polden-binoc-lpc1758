@@ -6,4 +6,8 @@
  */
 #pragma once
 
+extern bool but[7];
+
 void vSensorTask(void *pvParameters);
+
+
