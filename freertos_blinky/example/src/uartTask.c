@@ -8,7 +8,8 @@
 #include "board.h"
 #include "FreeRTOS.h"
 #include "task.h"
-
+#include "semphr.h"
+#include "limits.h"
 #include "sspTask.h"
 #include "oneWire.h"
 #include "adcTask.h"
@@ -18,6 +19,8 @@
 
 #include <string.h>
 #include <stdlib.h>
+
+#include "uartTask.h"
 
 
 #define IN_BUF_LEN 50
@@ -51,7 +54,7 @@ bool readSerial()
 }
 
 bool lastBut[7];
-void vUARTTask(void *pvParameters)
+extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
 {
 	uint32_t tickCnt = 0;
 
@@ -69,9 +72,18 @@ void vUARTTask(void *pvParameters)
 	sprintf(str, "%04X %04X %04d %04d %04d    000 000 000 %06d", xPos2, xPos1, dallasTemp, sharpVal, andrCpuTemp, cashCount);
 	//resetPhone();
 
-
-
+	uint32_t ulNotifiedValue;
+	BaseType_t ret;
 	while (1) {
+		if(xTaskNotifyWait( 0x00,      	/* Don't clear any notification bits on entry. */
+                ULONG_MAX, 				/* Reset the notification value to 0 on exit. */
+                &ulNotifiedValue, 		/* Notified value pass out in ulNotifiedValue. */
+				configTICK_RATE_HZ/10 ) == pdFALSE ){
+			DEBUGSTR("to\r\n");
+
+			continue;
+		}
+
 		if(readSerial() == true){
 		    if(strcmp((char*)inString, "reset\n") == 0){
 		      resetPhone();
@@ -151,11 +163,12 @@ void vUARTTask(void *pvParameters)
 		if(dallasTemp != lastDallasTemp){
 			lastDallasTemp = dallasTemp;
 			bDataUpdated = true;
-	        sprintf(&(str[10]), "%04d", dallasTemp);
-	        str[14] = ' ';
+	        //sprintf(&(str[10]), "%04d", dallasTemp);
+	        //str[14] = ' ';
 		}
 
-		if(xPos1 != lastXPos1){
+		//if(xPos1 != lastXPos1){
+		if((ulNotifiedValue&SSP_ENC1_BIT_NOTIFY) != 0){
 			lastXPos1 = xPos1;
 		    bDataUpdated = true;
 		    sprintf(&(str[5]), "%04X", xPos1);
@@ -163,12 +176,18 @@ void vUARTTask(void *pvParameters)
 		}
 
 
-		if(xPos2 != lastXPos2){
+		//if(xPos2 != lastXPos2){
+		if((ulNotifiedValue&SSP_ENC2_BIT_NOTIFY) != 0){
 			lastXPos2 = xPos2;
 		    bDataUpdated = true;
-		    sprintf(&(str[0]), "%04X", xPos2);
-		    str[4] = ' ';
+		    //sprintf(&(str[0]), "%04X", xPos2);
+		    //str[4] = ' ';
 		}
+
+		if((ulNotifiedValue&ADC_BIT_NOTIFY) != 0){
+			bDataUpdated = true;
+		}
+
 		if(cashCount != lastCashCount){
 			lastCashCount = cashCount;
 		    bDataUpdated = true;
@@ -186,11 +205,11 @@ void vUARTTask(void *pvParameters)
 		if(bDataUpdated){
 			bDataUpdated = false;
 			//DEBUGOUT("%04X %04X %04d %04d %04d    000 000 000", xPos1, xPos2, dallasTemp, sharpVal, andrCpuTemp);
-			sprintf(&(str[20]), "%04d    000 000 000", andrCpuTemp);
-			str[25] = isFanEnable()? 'E':'D';
-			str[26] = 'D'; //str[26] = bHeatOn? 'E':'D';
-			str[24] = str[27] = str[31] = str[35] = str[39] = ' ';
-			str[46] = 0;
+			//sprintf(&(str[20]), "%04d    000 000 000", andrCpuTemp);
+			//str[25] = isFanEnable()? 'E':'D';
+			//str[26] = 'D'; //str[26] = bHeatOn? 'E':'D';
+			//str[24] = str[27] = str[31] = str[35] = str[39] = ' ';
+			//str[46] = 0;
 
 			int v = 0;
 			for(int i=0; i<7; i++){
@@ -206,8 +225,8 @@ void vUARTTask(void *pvParameters)
 		    //resetPhone();
 		    lastPhoneMsgRecvTime = xTaskGetTickCount();
 		  }
-		/* About a 1s delay here */
-		vTaskDelay(configTICK_RATE_HZ/100);
+
+		//vTaskDelay(configTICK_RATE_HZ/200);
 	}
 }
 

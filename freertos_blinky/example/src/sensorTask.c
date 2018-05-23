@@ -1,5 +1,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
+#include "uartTask.h"
 
 #define SENSOR_COUNTER 20
 bool but[7];
@@ -11,6 +12,7 @@ int checkPin(int port, int pin)
 	Chip_IOCON_PinMux(LPC_IOCON, port, pin, IOCON_MODE_INACT, IOCON_FUNC0); //40
 	Chip_GPIO_SetPinOutLow(LPC_GPIO, port, pin);
 	//Chip_GPIO_SetPinOutHigh(LPC_GPIO, port, pin);
+	taskENTER_CRITICAL();
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, port, pin);
 	Chip_GPIO_SetPinDIRInput(LPC_GPIO, port, pin);
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 11, true);
@@ -25,16 +27,31 @@ int checkPin(int port, int pin)
 //			break;
 //		}
 	}
-
+	taskEXIT_CRITICAL();
 	for(int i=0; i<SENSOR_COUNTER; i++){
 		if( ((vals[i]>>pin)&1) != 0)
 			return i;
 	}
 
 	return 0;
-
-
 }
+uint32_t butBits = 0;
+uint32_t lastButBits = 0;
+
+void processBut(int ind, int port, int pin)
+{
+	int val = 0;
+	val = checkPin(port, pin);
+	but[ind] = (val>0);
+	if(val > 0){
+		butBits |= (1<<ind);
+		//DEBUGOUT("sens0: %d\r\n", val);
+	}
+	else{
+		butBits &= ~(1<<ind);
+	}
+}
+
 
 void vSensorTask(void *pvParameters)
 {
@@ -52,53 +69,18 @@ void vSensorTask(void *pvParameters)
 
 	while(1)
 	{
-		taskENTER_CRITICAL();
-		int val = 0;
-		val = checkPin(0, 11);
-		but[0] = (val>0);
-		if(val > 0){
-			//DEBUGOUT("sens0: %d\r\n", val);
+		processBut(0, 0, 11);
+		processBut(1, 0, 10);
+		processBut(2, 0, 0);
+		processBut(3, 0, 1);
+		processBut(4, 1, 29);
+		processBut(5, 1, 28);
+		processBut(6, 1, 26);
+
+		if(butBits != lastButBits){
+			xTaskNotify(xUartTaskHandle, SENSOR_BIT_NOTIFY, eSetBits);
+			lastButBits = butBits;
 		}
-
-		val = checkPin(0, 10);
-		but[1] = (val>0);
-		if(val > 0){
-			//DEBUGOUT("sens1: %d\r\n", val);
-		}
-
-		val = checkPin(0, 0);
-		but[2] = (val>0);
-		if(val > 0){
-			//DEBUGOUT("sens2: %d\r\n", val);
-		}
-
-		val = checkPin(0, 1);
-		but[3] = (val>0);
-		if(val > 0){
-			//DEBUGOUT("sens2: %d\r\n", val);
-		}
-
-
-
-		val = checkPin(1, 29);
-		but[4] = (val>0);
-		if(val > 0){
-			//DEBUGOUT("sens2: %d\r\n", val);
-		}
-
-		val = checkPin(1, 28);
-		but[5] = (val>0);
-		if(val > 0){
-			//DEBUGOUT("sens2: %d\r\n", val);
-		}
-
-		val = checkPin(1, 26);
-		but[6] = (val>0);
-		if(val > 0){
-			//DEBUGOUT("sens2: %d\r\n", val);
-		}
-
-		taskEXIT_CRITICAL();
 
 		vTaskDelay(configTICK_RATE_HZ / 50);
 

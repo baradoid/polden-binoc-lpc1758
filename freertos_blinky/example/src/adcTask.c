@@ -2,6 +2,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "stdlib.h"
+#include "uartTask.h"
+
 double filter(int d)
 {
   static double acc = 0;
@@ -99,6 +101,7 @@ void vAdcTask(void *pvParameters)
 	DEBUGOUT("ADC periph clock %d \r\n", Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_ADC));
 
 	uint16_t val;
+	int lastSharpVal = 0;
 	//int iPass =0;
 	Status stat;
 	while (1) {
@@ -109,7 +112,8 @@ void vAdcTask(void *pvParameters)
 			while (Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_DONE_STAT) != SET) {
 				//DEBUGOUT("ADC: wait\r\n");
 				waitCount++;
-				vTaskDelay(0);
+				//vTaskDelay(0);
+				taskYIELD();
 			}
 			if(Chip_ADC_ReadStatus(LPC_ADC, ADC_CH2, ADC_DR_OVERRUN_STAT) == SET){
 				//DEBUGOUT("ADC: overrun\r\n");
@@ -133,6 +137,10 @@ void vAdcTask(void *pvParameters)
 
 			  //sharpVal = recalcMvToCm(mV);
 			  sharpVal = recalcMvToCm(mV);
+			  if(sharpVal != lastSharpVal){
+				  xTaskNotify(xUartTaskHandle, ADC_BIT_NOTIFY, eSetBits);
+				  lastSharpVal = sharpVal;
+			  }
 //			  if (sharpVal < 25){
 //				  DEBUGOUT("sharpVal: %d iPass:%d\r\n", sharpVal, iPass++);
 //			  }
