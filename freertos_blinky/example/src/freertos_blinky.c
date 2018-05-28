@@ -122,14 +122,14 @@ static void vReleTask(void *pvParameters) {
  * @brief	main routine for FreeRTOS blinky example
  * @return	Nothing, function should not exit
  */
-xSemaphoreHandle xUartTaskSemaphore = NULL;
+//xSemaphoreHandle xUartTaskSemaphore = NULL;
 TaskHandle_t xUartTaskHandle = NULL;
 
 /* Transmit and receive ring buffers */
-STATIC RINGBUFF_T txring, rxring;
+RINGBUFF_T txring, rxring;
 
 /* Transmit and receive ring buffer sizes */
-#define UART_SRB_SIZE 128	/* Send */
+#define UART_SRB_SIZE 512	/* Send */
 #define UART_RRB_SIZE 32	/* Receive */
 
 /* Transmit and receive buffers */
@@ -200,14 +200,15 @@ int main(void)
 
 
 
-	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
+	char sBuf[100];
+	sprintf(&(sBuf[0]), "sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 
-	vSemaphoreCreateBinary( xUartTaskSemaphore );
+	Chip_UART_SendRB(LPC_UART0, &txring, &(sBuf[0]), strlen(&(sBuf[0])));
 
 	/* LED1 toggle thread */
-	xTaskCreate(vAdcTask, (signed char *) "vAdcTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vAdcTask, (signed char *) "vAdcTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
 //	/* LED2 toggle thread */
 //	xTaskCreate(vLEDTask2, (signed char *) "vTaskLed2",
@@ -219,25 +220,25 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) &xUartTaskHandle);
 
-	xTaskCreate(vReleTask, (signed char *) "vReleTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vReleTask, (signed char *) "vReleTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
-	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2UL),
+//				(xTaskHandle *) NULL);
 
 //	xTaskCreate(vBVTask, (signed char *) "vBVTask",
 //				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 //				(xTaskHandle *) NULL);
 
-	xTaskCreate(vOneWireTask, (signed char *) "vOneWireTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vOneWireTask, (signed char *) "vOneWireTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
-	xTaskCreate(vHeatTask, (signed char *) "vHeatTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vHeatTask, (signed char *) "vHeatTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
 //	xTaskCreate(vSensorTask, (signed char *) "vSensorTask",
 //				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
@@ -251,7 +252,29 @@ int main(void)
 
 void UART0_IRQHandler(void)
 {
+	BaseType_t xHigherPriorityTaskWoken;
+	xHigherPriorityTaskWoken = pdFALSE;
+	bool bRdrTrue = false;
+	//if(Chip_UART_ReadLineStatus(LPC_UART0) & UART_LSR_RDR){
+
+		bRdrTrue = false;
+
+
+	//}
+
+
 	Chip_UART_IRQRBHandler(LPC_UART0, &rxring, &txring);
+
+    /* Force a context switch if xHigherPriorityTaskWoken is now set to pdTRUE.
+    The macro used to do this is dependent on the port and may be called
+    portEND_SWITCHING_ISR. */
+    //
+    //portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
+//	xTaskNotifyFromISR(xUartTaskHandle,
+//								UART_RDR_BIT_NOTIFY,
+//								bRdrTrue? eSetBits: eNoAction,
+//								&xHigherPriorityTaskWoken );
+	//portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
 /**

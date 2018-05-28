@@ -15,3 +15,4 @@ extern TaskHandle_t xUartTaskHandle;
 #define SSP_ENC2_BIT_NOTIFY 0x02
 #define ADC_BIT_NOTIFY 		0x04
 #define SENSOR_BIT_NOTIFY 	0x08
+#define UART_RDR_BIT_NOTIFY 0x10
