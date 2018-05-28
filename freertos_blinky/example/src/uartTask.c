@@ -79,7 +79,8 @@ extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
                 ULONG_MAX, 				/* Reset the notification value to 0 on exit. */
                 &ulNotifiedValue, 		/* Notified value pass out in ulNotifiedValue. */
 				configTICK_RATE_HZ/10 ) == pdFALSE ){
-			DEBUGSTR("to\r\n");
+			//DEBUGSTR("to\r\n");
+			bDataUpdated = true;
 
 			continue;
 		}
