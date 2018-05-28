@@ -239,9 +239,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) NULL);
 
-	xTaskCreate(vSensorTask, (signed char *) "vSensorTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vSensorTask, (signed char *) "vSensorTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 	/* Start the scheduler */
 	vTaskStartScheduler();
 
