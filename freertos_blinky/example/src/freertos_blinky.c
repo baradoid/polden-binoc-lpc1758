@@ -125,35 +125,35 @@ static void vReleTask(void *pvParameters) {
 xSemaphoreHandle xUartTaskSemaphore = NULL;
 TaskHandle_t xUartTaskHandle = NULL;
 
-/* Transmit and receive ring buffers */
-STATIC RINGBUFF_T txring, rxring;
-
-/* Transmit and receive ring buffer sizes */
-#define UART_SRB_SIZE 128	/* Send */
-#define UART_RRB_SIZE 32	/* Receive */
-
-/* Transmit and receive buffers */
-static uint8_t rxbuff[UART_RRB_SIZE], txbuff[UART_SRB_SIZE];
-const char inst1[] = "LPC17xx/40xx UART example using ring buffers\r\n";
-const char inst2[] = "Press a key to echo it back or ESC to quit\r\n";
+///* Transmit and receive ring buffers */
+//STATIC RINGBUFF_T txring, rxring;
+//
+///* Transmit and receive ring buffer sizes */
+//#define UART_SRB_SIZE 128	/* Send */
+//#define UART_RRB_SIZE 32	/* Receive */
+//
+///* Transmit and receive buffers */
+//static uint8_t rxbuff[UART_RRB_SIZE], txbuff[UART_SRB_SIZE];
+//const char inst1[] = "LPC17xx/40xx UART example using ring buffers\r\n";
+//const char inst2[] = "Press a key to echo it back or ESC to quit\r\n";
 
 int main(void)
 {
 	prvSetupHardware();
 
-	RingBuffer_Init(&rxring, rxbuff, 1, UART_RRB_SIZE);
-	RingBuffer_Init(&txring, txbuff, 1, UART_SRB_SIZE);
+	//RingBuffer_Init(&rxring, rxbuff, 1, UART_RRB_SIZE);
+	//RingBuffer_Init(&txring, txbuff, 1, UART_SRB_SIZE);
 	/* Reset and enable FIFOs, FIFO trigger level 3 (14 chars) */
-	Chip_UART_SetupFIFOS(LPC_UART0, (UART_FCR_FIFO_EN | UART_FCR_RX_RS |
-							UART_FCR_TX_RS | UART_FCR_TRG_LEV3));
-	/* Enable receive data and line status interrupt */
-	Chip_UART_IntEnable(LPC_UART0, (UART_IER_RBRINT | UART_IER_RLSINT));
+//	Chip_UART_SetupFIFOS(LPC_UART0, (UART_FCR_FIFO_EN | UART_FCR_RX_RS |
+//							UART_FCR_TX_RS | UART_FCR_TRG_LEV3));
+//	/* Enable receive data and line status interrupt */
+//	Chip_UART_IntEnable(LPC_UART0, (UART_IER_RBRINT | UART_IER_RLSINT));
 	/* preemption = 1, sub-priority = 1 */
-	NVIC_SetPriority(UART0_IRQn, 1);
-	NVIC_EnableIRQ(UART0_IRQn);
+	//NVIC_SetPriority(UART0_IRQn, 1);
+	//NVIC_EnableIRQ(UART0_IRQn);
 	/* Send initial messages */
-	Chip_UART_SendRB(LPC_UART0, &txring, inst1, sizeof(inst1) - 1);
-	Chip_UART_SendRB(LPC_UART0, &txring, inst2, sizeof(inst2) - 1);
+	//Chip_UART_SendRB(LPC_UART0, &txring, inst1, sizeof(inst1) - 1);
+	//Chip_UART_SendRB(LPC_UART0, &txring, inst2, sizeof(inst2) - 1);
 
 	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 6, true);  //Heat
@@ -219,9 +219,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) &xUartTaskHandle);
 
-	xTaskCreate(vReleTask, (signed char *) "vReleTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vReleTask, (signed char *) "vReleTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
 	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2UL),
@@ -231,13 +231,13 @@ int main(void)
 //				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 //				(xTaskHandle *) NULL);
 
-	xTaskCreate(vOneWireTask, (signed char *) "vOneWireTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vOneWireTask, (signed char *) "vOneWireTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
-	xTaskCreate(vHeatTask, (signed char *) "vHeatTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vHeatTask, (signed char *) "vHeatTask",
+//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+//				(xTaskHandle *) NULL);
 
 //	xTaskCreate(vSensorTask, (signed char *) "vSensorTask",
 //				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
@@ -249,10 +249,10 @@ int main(void)
 	return 1;
 }
 
-void UART0_IRQHandler(void)
-{
-	Chip_UART_IRQRBHandler(LPC_UART0, &rxring, &txring);
-}
+//void UART0_IRQHandler(void)
+//{
+//	Chip_UART_IRQRBHandler(LPC_UART0, &rxring, &txring);
+//}
 
 /**
  * @}

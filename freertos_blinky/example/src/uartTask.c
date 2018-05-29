@@ -216,7 +216,7 @@ extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
 			for(int i=0; i<7; i++){
 				v |= ((but[i]?1:0)<<i);
 			}
-			sprintf(&(str[0]), "%04X %04X %04d %02X", xPos1, xPos2, sharpVal, v);
+			sprintf(&(str[0]), "%04X %04X %02d %02X", xPos1, xPos2, sharpVal, v);
 			DEBUGSTR(str);
 			DEBUGSTR("\r\n");
 			tickCnt++;
