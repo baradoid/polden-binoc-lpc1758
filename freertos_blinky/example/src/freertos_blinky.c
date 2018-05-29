@@ -206,9 +206,9 @@ int main(void)
 	Chip_UART_SendRB(LPC_UART0, &txring, &(sBuf[0]), strlen(&(sBuf[0])));
 
 	/* LED1 toggle thread */
-//	xTaskCreate(vAdcTask, (signed char *) "vAdcTask",
-//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-//				(xTaskHandle *) NULL);
+	xTaskCreate(vAdcTask, (signed char *) "vAdcTask",
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				(xTaskHandle *) NULL);
 
 //	/* LED2 toggle thread */
 //	xTaskCreate(vLEDTask2, (signed char *) "vTaskLed2",
