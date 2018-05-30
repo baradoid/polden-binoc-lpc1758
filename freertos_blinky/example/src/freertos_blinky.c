@@ -219,9 +219,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(xTaskHandle *) &xUartTaskHandle);
 
-//	xTaskCreate(vReleTask, (signed char *) "vReleTask",
-//				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-//				(xTaskHandle *) NULL);
+	xTaskCreate(vReleTask, (signed char *) "vReleTask",
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				(xTaskHandle *) NULL);
 
 	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2UL),
