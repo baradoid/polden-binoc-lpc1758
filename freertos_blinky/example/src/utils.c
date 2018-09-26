@@ -8,15 +8,15 @@ void soundOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 10, false); }
 void soundOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 10, true); }
 bool isSoundEnabled() { return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 10); }
 
-void fanOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); }
-void fanOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); }
+void fanOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); }
+void fanOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, false); }
 bool isFanEnable() { return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 0); }
 
 
 //void heatOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, false);}
 //void heatOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 2, 6, true); }
 //bool isheatEnable(){ return !Chip_GPIO_ReadPortBit(LPC_GPIO, 2, 6); }
-void heatOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 8, true); }
+void heatOn() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 8, true); }  //invert because open drain
 void heatOff() { Chip_GPIO_WritePortBit(LPC_GPIO, 1, 8, false); }
 bool isHeatEnabled() { return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 8); }
 

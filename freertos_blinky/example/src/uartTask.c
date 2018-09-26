@@ -82,7 +82,7 @@ extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
 			//DEBUGSTR("to\r\n");
 			bDataUpdated = true;
 
-			continue;
+			//continue;
 		}
 
 		if(readSerial() == true){

@@ -82,18 +82,21 @@ static void prvSetupHardware(void)
 
 static void vReleTask(void *pvParameters) {
 	fanOn();
-	usbOff();
-	batPwrOff();
+	//heatOn();
+	//usbOff();
+	//batPwrOff();
 
 	vTaskDelay(configTICK_RATE_HZ*2 );
-	batPwrOn();
+	//batPwrOn();
 	vTaskDelay(configTICK_RATE_HZ*2 );
-	usbOn();
-	vTaskDelay(configTICK_RATE_HZ*10 );
-	usbOff();
-
-
+	//usbOn();
+	vTaskDelay(configTICK_RATE_HZ*5 );
+	//usbOff();
+	heatOn();
 	fanOff();
+
+
+
 	//Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, false);  //VBat
 	//vTaskDelay(configTICK_RATE_HZ*3 );
 
@@ -177,11 +180,12 @@ int main(void)
 //	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 0, true); //VBat
 
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //fan rele
-	//Chip_IOCON_EnableOD(LPC_IOCON, 1, 0);
+	Chip_IOCON_EnableOD(LPC_IOCON, 1, 0);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //fan rele
-	fanOn();
+	fanOff();
 
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 8, IOCON_MODE_INACT, IOCON_FUNC0); //heat
+	Chip_IOCON_EnableOD(LPC_IOCON, 1, 8);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 8, true);  //heat
 	heatOff();
 
@@ -216,11 +220,11 @@ int main(void)
 
 	/* UART output thread, simply counts seconds */
 	xTaskCreate(vUARTTask, (signed char *) "vTaskUart",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY),
 				(xTaskHandle *) &xUartTaskHandle);
 
 	xTaskCreate(vReleTask, (signed char *) "vReleTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY),
 				(xTaskHandle *) NULL);
 
 	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
