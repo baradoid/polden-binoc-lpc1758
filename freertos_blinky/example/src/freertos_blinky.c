@@ -85,6 +85,7 @@ static void vReleTask(void *pvParameters) {
 	//heatOn();
 	//usbOff();
 	//batPwrOff();
+	powerReleOff();
 
 	vTaskDelay(configTICK_RATE_HZ*2 );
 	//batPwrOn();
@@ -93,7 +94,10 @@ static void vReleTask(void *pvParameters) {
 	vTaskDelay(configTICK_RATE_HZ*5 );
 	//usbOff();
 	heatOn();
+	powerReleOn();
 	fanOff();
+	vTaskDelay(configTICK_RATE_HZ*15 );
+	fanOn();
 
 
 
@@ -158,22 +162,22 @@ int main(void)
 	//Chip_UART_SendRB(LPC_UART0, &txring, inst1, sizeof(inst1) - 1);
 	//Chip_UART_SendRB(LPC_UART0, &txring, inst2, sizeof(inst2) - 1);
 
-	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0);
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 6, true);  //Heat
+//	Chip_IOCON_PinMux(LPC_IOCON, 2, 6, IOCON_MODE_INACT, IOCON_FUNC0);
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 6, true);  //Heat
 
 	Chip_IOCON_PinMux(LPC_IOCON, 1, 10, IOCON_MODE_INACT, IOCON_FUNC0);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 10, true);  //Mute
 	soundOff();
 
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 23, IOCON_MODE_INACT, IOCON_FUNC0); //Tacho_Fan1
-	Chip_IOCON_EnableOD(LPC_IOCON, 1, 23);
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 23, true);  //Tacho_Fan1
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
+//	Chip_IOCON_PinMux(LPC_IOCON, 1, 23, IOCON_MODE_INACT, IOCON_FUNC0); //Tacho_Fan1
+//	Chip_IOCON_EnableOD(LPC_IOCON, 1, 23);
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 23, true);  //Tacho_Fan1
+//	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
 
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 22, IOCON_MODE_INACT, IOCON_FUNC0); //Tacho_Fan2
-	Chip_IOCON_EnableOD(LPC_IOCON, 1, 22);
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 22, true);  //Tacho_Fan2
-	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 22, true); //Tacho_Fan2
+//	Chip_IOCON_PinMux(LPC_IOCON, 1, 22, IOCON_MODE_INACT, IOCON_FUNC0); //Tacho_Fan2
+//	Chip_IOCON_EnableOD(LPC_IOCON, 1, 22);
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 22, true);  //Tacho_Fan2
+//	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 22, true); //Tacho_Fan2
 
 //	Chip_IOCON_PinMux(LPC_IOCON, 1, 0, IOCON_MODE_INACT, IOCON_FUNC0); //VBat
 //	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //VBat
@@ -184,25 +188,33 @@ int main(void)
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 0, true);  //fan rele
 	fanOff();
 
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 8, IOCON_MODE_INACT, IOCON_FUNC0); //heat
-	Chip_IOCON_EnableOD(LPC_IOCON, 1, 8);
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 8, true);  //heat
-	heatOff();
+//	Chip_IOCON_PinMux(LPC_IOCON, 1, 8, IOCON_MODE_INACT, IOCON_FUNC0); //heat
+//	Chip_IOCON_EnableOD(LPC_IOCON, 1, 8);
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 8, true);  //heat
+//	heatOff();
 
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 19, IOCON_MODE_INACT, IOCON_FUNC0); //BV pwr
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 19, true);  //fan rele
-	BVOn();
+//	Chip_IOCON_PinMux(LPC_IOCON, 1, 19, IOCON_MODE_INACT, IOCON_FUNC0); //BV pwr
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 19, true);  //fan rele
+//	BVOn();
+//
+//	Chip_IOCON_PinMux(LPC_IOCON, 1, 9, IOCON_MODE_INACT, IOCON_FUNC0); //bat pwr
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 9, true);  //bat rele
 
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 9, IOCON_MODE_INACT, IOCON_FUNC0); //bat pwr
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 9, true);  //bat rele
-
-	Chip_IOCON_PinMux(LPC_IOCON, 1, 1, IOCON_MODE_INACT, IOCON_FUNC0); //usb pwr
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 1, true);  //usb pwr rele
-
-	Chip_IOCON_PinMux(LPC_IOCON, 0, 11, IOCON_MODE_INACT, IOCON_FUNC0);
-	Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 11, false);
+//	Chip_IOCON_PinMux(LPC_IOCON, 1, 1, IOCON_MODE_INACT, IOCON_FUNC0); //usb pwr
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 1, true);  //usb pwr rele
+//
+//	Chip_IOCON_PinMux(LPC_IOCON, 0, 11, IOCON_MODE_INACT, IOCON_FUNC0);
+//	Chip_GPIO_WriteDirBit(LPC_GPIO, 0, 11, false);
 
 
+	powerReleOff();
+	Chip_IOCON_PinMux(LPC_IOCON, 2, 0, IOCON_MODE_INACT, IOCON_FUNC0); //power rele
+	Chip_IOCON_EnableOD(LPC_IOCON, 2, 0);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 0, true);  //heat
+
+	Chip_IOCON_PinMux(LPC_IOCON, 2, 1, IOCON_MODE_INACT, IOCON_FUNC0); //power rele
+	Chip_IOCON_EnableOD(LPC_IOCON, 2, 1);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 1, true);  //heat
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 

@@ -24,4 +24,6 @@ bool isUsbOn();
 
 void resetPhone();
 
+void powerReleOn();
+void powerReleOff();
 

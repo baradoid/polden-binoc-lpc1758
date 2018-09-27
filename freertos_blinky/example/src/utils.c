@@ -28,7 +28,17 @@ void usbOn(){ Chip_GPIO_WritePortBit(LPC_GPIO, 1, 1, false); }
 void usbOff(){ Chip_GPIO_WritePortBit(LPC_GPIO, 1, 1, true); }
 bool isUsbOn(){ return !Chip_GPIO_ReadPortBit(LPC_GPIO, 1, 1); }
 
+void powerReleOn()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 0, false);
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 1, false);
+}
 
+void powerReleOff()
+{
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 0, true);
+	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 1, true);
+}
 
 void resetPhone()
 {
