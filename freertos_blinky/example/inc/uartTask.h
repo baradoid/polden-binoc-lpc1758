@@ -8,6 +8,7 @@
 #pragma once
 
 void vUARTTask(void *pvParameters);
+void vUartRecvTask(void *pvParameters);
 
 extern TaskHandle_t xUartTaskHandle;
 

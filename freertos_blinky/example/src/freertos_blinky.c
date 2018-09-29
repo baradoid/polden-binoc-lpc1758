@@ -232,15 +232,20 @@ int main(void)
 
 	/* UART output thread, simply counts seconds */
 	xTaskCreate(vUARTTask, (signed char *) "vTaskUart",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY),
+				configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES - 2),
 				(xTaskHandle *) &xUartTaskHandle);
+
+	xTaskCreate(vUartRecvTask, (signed char *) "vUartRecvTask",
+				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY),
+				(xTaskHandle *) NULL);
+
 
 	xTaskCreate(vReleTask, (signed char *) "vReleTask",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY),
 				(xTaskHandle *) NULL);
 
 	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 2UL),
+				configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES - 1),
 				(xTaskHandle *) NULL);
 
 //	xTaskCreate(vBVTask, (signed char *) "vBVTask",

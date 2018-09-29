@@ -23,38 +23,10 @@
 #include "uartTask.h"
 
 
-#define IN_BUF_LEN 50
-uint8_t inString[IN_BUF_LEN] = "";
-int curInStringInd = 0;
-bool readSerial()
-{
-  bool ret = false;
-  while (Chip_UART_ReadLineStatus(LPC_UART0) & UART_LSR_RDR) {
-	  uint8_t inChar = Chip_UART_ReadByte(LPC_UART0);
-    //if (isDigit(inChar)) {
-      // convert the incoming byte to a char
-      // and add it to the string:
-      inString[curInStringInd++] = (char)inChar;
-    //}
-
-      if(curInStringInd>=IN_BUF_LEN){
-    	  curInStringInd = 0;
-      }
-
-    if (inChar == '\n') {
-      //andrCpuTemp = inString.toInt();
-      //inString = "";
-    	inString[curInStringInd] = 0;
-    	curInStringInd = 0;
-      ret = true;
-      break;
-    }
-  }
-  return ret;
-}
 
 bool lastBut[7];
-extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
+extern xSemaphoreHandle xUartTaskSemaphore;
+void vUARTTask(void *pvParameters)
 {
 	uint32_t tickCnt = 0;
 
@@ -62,7 +34,7 @@ extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
 
 	int lastXPos1 = 0, lastXPos2 = 0;
 	int lastAndrCpuTemp = 0, andrCpuTemp=0;
-	uint64_t lastPhoneMsgRecvTime = 0;
+
 	bool bDataUpdated = false;
 	int lastDallasTemp = -990;
 	int sharpValLast = 0;
@@ -75,6 +47,7 @@ extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
 	uint32_t ulNotifiedValue;
 	BaseType_t ret;
 	while (1) {
+		//DEBUGSTR("start ... ");
 		if(xTaskNotifyWait( 0x00,      	/* Don't clear any notification bits on entry. */
                 ULONG_MAX, 				/* Reset the notification value to 0 on exit. */
                 &ulNotifiedValue, 		/* Notified value pass out in ulNotifiedValue. */
@@ -84,72 +57,9 @@ extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
 
 			continue;
 		}
+		//DEBUGSTR("stop w\r\n");
 
-		if(readSerial() == true){
-		    if(strcmp((char*)inString, "reset\n") == 0){
-		      resetPhone();
-		      lastPhoneMsgRecvTime = xTaskGetTickCount();
-		    }
-		    else if(strcmp((char*)inString, "son\n") == 0){
-		      soundOn();
-		      lastPhoneMsgRecvTime = xTaskGetTickCount();
-		      //DEBUGSTR("son!!");
-		    }
-		    else if(strcmp((char*)inString, "soff\n") == 0){
-		      soundOff();
-		      lastPhoneMsgRecvTime = xTaskGetTickCount();
-		      //DEBUGSTR("soff!!");
-		    }
-		    else if(strstr((char*)inString, "t=") != NULL){
-		    	lastPhoneMsgRecvTime = xTaskGetTickCount();
-		    	andrCpuTemp = atoi(&(inString[2]));
-		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
-			    if(andrCpuTemp > 40){
-			    	fanOn();
-			    }
-			    else{
-			    	fanOff();
-			    }
-		    }
-		    else if(strstr((char*)inString, "fanOn\n") != NULL){
-		    	fanOn();
-		    }
-		    else if(strstr((char*)inString, "fanOff\n") != NULL){
-		    	fanOff();
-		    }
-		    else if(strstr((char*)inString, "pwrOn\n") != NULL){
-		    	batPwrOn();
-		    }
-		    else if(strstr((char*)inString, "pwrOff\n") != NULL){
-		    	batPwrOff();
-		    }
-		    else if(strstr((char*)inString, "usbOn\n") != NULL){
-		    	usbOn();
-		    }
-		    else if(strstr((char*)inString, "usbOff\n") != NULL){
-		    	usbOff();
-		    }
-		    else if(strstr((char*)inString, "audioOn\n") != NULL){
-		    	soundOn();
-		    }
-		    else if(strstr((char*)inString, "audioOff\n") != NULL){
-		    	soundOff();
-		    }
-		    else if(strstr((char*)inString, "heatOn\n") != NULL){
-		    	heatOn();
-		    }
-		    else if(strstr((char*)inString, "heatOff\n") != NULL){
-		    	heatOff();
-		    }
-//		    else if(inString.startsWith("d=") == true){
-//		      inString.remove(0, 2);
-//
-//		      dallasTemp = inString.toInt();
-//		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
-//		      lastPhoneMsgRecvTime = millis();
-//		    }
-		    //inString = "";
-		}
+
 
 		  if((xTaskGetTickCount() - lastDistContrTime) > 50 ){
 		    lastDistContrTime = xTaskGetTickCount();
@@ -222,12 +132,118 @@ extern xSemaphoreHandle xUartTaskSemaphore;void vUARTTask(void *pvParameters)
 			tickCnt++;
 		}
 
-		  if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 1200){
-		    //resetPhone();
-		    lastPhoneMsgRecvTime = xTaskGetTickCount();
-		  }
+//		  if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 1200){
+//		    //resetPhone();
+//		    lastPhoneMsgRecvTime = xTaskGetTickCount();
+//		  }
 
 		//vTaskDelay(configTICK_RATE_HZ/200);
 	}
+}
+
+
+
+#define IN_BUF_LEN 50
+uint8_t inString[IN_BUF_LEN] = "";
+int curInStringInd = 0;
+bool readSerial()
+{
+  bool ret = false;
+  while (Chip_UART_ReadLineStatus(LPC_UART0) & UART_LSR_RDR) {
+	  uint8_t inChar = Chip_UART_ReadByte(LPC_UART0);
+    //if (isDigit(inChar)) {
+      // convert the incoming byte to a char
+      // and add it to the string:
+      inString[curInStringInd++] = (char)inChar;
+    //}
+
+      if(curInStringInd>=IN_BUF_LEN){
+    	  curInStringInd = 0;
+      }
+
+    if (inChar == '\n') {
+      //andrCpuTemp = inString.toInt();
+      //inString = "";
+    	inString[curInStringInd] = 0;
+    	curInStringInd = 0;
+      ret = true;
+      break;
+    }
+  }
+  return ret;
+}
+void vUartRecvTask(void *pvParameters)
+{
+	uint64_t lastPhoneMsgRecvTime = 0;
+	while (1) {
+		if(readSerial() == true){
+		    if(strcmp((char*)inString, "reset\n") == 0){
+		      resetPhone();
+		      //lastPhoneMsgRecvTime = xTaskGetTickCount();
+		    }
+		    else if(strcmp((char*)inString, "son\n") == 0){
+		      soundOn();
+		      lastPhoneMsgRecvTime = xTaskGetTickCount();
+		      //DEBUGSTR("son!!");
+		    }
+		    else if(strcmp((char*)inString, "soff\n") == 0){
+		      soundOff();
+		      lastPhoneMsgRecvTime = xTaskGetTickCount();
+		      //DEBUGSTR("soff!!");
+		    }
+		    else if(strstr((char*)inString, "t=") != NULL){
+		    	lastPhoneMsgRecvTime = xTaskGetTickCount();
+		    	//andrCpuTemp = atoi(&(inString[2]));
+		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
+//			    if(andrCpuTemp > 40){
+//			    	fanOn();
+//			    }
+//			    else{
+//			    	fanOff();
+//			    }
+		    }
+		    else if(strstr((char*)inString, "fanOn\n") != NULL){
+		    	fanOn();
+		    }
+		    else if(strstr((char*)inString, "fanOff\n") != NULL){
+		    	fanOff();
+		    }
+		    else if(strstr((char*)inString, "pwrOn\n") != NULL){
+		    	batPwrOn();
+		    }
+		    else if(strstr((char*)inString, "pwrOff\n") != NULL){
+		    	batPwrOff();
+		    }
+		    else if(strstr((char*)inString, "usbOn\n") != NULL){
+		    	usbOn();
+		    }
+		    else if(strstr((char*)inString, "usbOff\n") != NULL){
+		    	usbOff();
+		    }
+		    else if(strstr((char*)inString, "audioOn\n") != NULL){
+		    	soundOn();
+		    }
+		    else if(strstr((char*)inString, "audioOff\n") != NULL){
+		    	soundOff();
+		    }
+		    else if(strstr((char*)inString, "heatOn\n") != NULL){
+		    	heatOn();
+		    }
+		    else if(strstr((char*)inString, "heatOff\n") != NULL){
+		    	heatOff();
+		    }
+//		    else if(inString.startsWith("d=") == true){
+//		      inString.remove(0, 2);
+//
+//		      dallasTemp = inString.toInt();
+//		      //sprintf(&(str[20]),"%04d", andrCpuTemp);
+//		      lastPhoneMsgRecvTime = millis();
+//		    }
+		    //inString = "";
+		}
+		vTaskDelay(configTICK_RATE_HZ / 10);
+
+	}
+
 }
 
