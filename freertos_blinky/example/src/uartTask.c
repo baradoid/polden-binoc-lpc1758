@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 #include "uartTask.h"
-
+#include <iap.h>
 
 
 bool lastBut[7];
@@ -232,6 +232,19 @@ void vUartRecvTask(void *pvParameters)
 		    else if(strstr((char*)inString, "heatOff\n") != NULL){
 		    	heatOff();
 		    }
+		    else if( (strstr((char*)inString, "isp\n")!= NULL) ||
+		    		(strstr((char*)inString, "isp\r\n")!= NULL) ){
+		    	DEBUGSTR("enter ISP OK\n");
+		    	__disable_irq();
+		    	uint8_t r = Chip_IAP_ReinvokeISP();
+
+		    	char str[20];
+		    	sprintf(&(str[0]), "enter ISP ret: %d\n", r);
+				DEBUGSTR(str);
+		    }
+
+
+
 //		    else if(inString.startsWith("d=") == true){
 //		      inString.remove(0, 2);
 //

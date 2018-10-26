@@ -218,6 +218,7 @@ int main(void)
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 
+	//Chip_IAP_ReinvokeISP();
 	vSemaphoreCreateBinary( xUartTaskSemaphore );
 
 	/* LED1 toggle thread */
