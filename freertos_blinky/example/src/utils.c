@@ -32,12 +32,14 @@ void powerReleOn()
 {
 	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 0, false);
 	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 1, false);
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 8, true);
 }
 
 void powerReleOff()
 {
 	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 0, true);
 	Chip_GPIO_WritePortBit(LPC_GPIO, 2, 1, true);
+	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 8, false);
 }
 
 void resetPhone()

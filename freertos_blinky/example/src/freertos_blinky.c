@@ -98,6 +98,8 @@ static void vReleTask(void *pvParameters) {
 	fanOff();
 	vTaskDelay(configTICK_RATE_HZ*15 );
 	fanOn();
+	vTaskDelay(configTICK_RATE_HZ*5 );
+	soundOn();
 
 
 
@@ -215,6 +217,10 @@ int main(void)
 	Chip_IOCON_PinMux(LPC_IOCON, 2, 1, IOCON_MODE_INACT, IOCON_FUNC0); //power rele
 	Chip_IOCON_EnableOD(LPC_IOCON, 2, 1);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 2, 1, true);  //heat
+
+	Chip_IOCON_PinMux(LPC_IOCON, 1, 8, IOCON_MODE_INACT, IOCON_FUNC0); //power rele
+	//Chip_IOCON_EnableOD(LPC_IOCON, 1, 8);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 8, true);  //heat
 
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 
