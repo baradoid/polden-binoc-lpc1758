@@ -242,6 +242,11 @@ void vUartRecvTask(void *pvParameters)
 		    	sprintf(&(str[0]), "enter ISP ret: %d\n", r);
 				DEBUGSTR(str);
 		    }
+		    else if( (strstr((char*)inString, "ver\n") != NULL) ||
+		    		(strstr((char*)inString, "ver\r\n")!= NULL) ){
+				printCompileDate();
+		    }
+
 
 
 
@@ -258,5 +263,13 @@ void vUartRecvTask(void *pvParameters)
 
 	}
 
+}
+
+
+void printCompileDate()
+{
+	char str[40];
+	sprintf(&(str[0]), "compile time:%s %s\r\n", __DATE__, __TIME__);
+	DEBUGSTR(str);
 }
 

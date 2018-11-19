@@ -222,6 +222,10 @@ int main(void)
 	//Chip_IOCON_EnableOD(LPC_IOCON, 1, 8);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 8, true);  //heat
 
+	//printf("__DATE__: '%s'\r\n", __DATE__);
+	//printf("__TIME__: '%s'\r\n", __TIME__);
+
+	printCompileDate();
 	printf("sysclk %.2f MHz periph %.2f MHz\r\n", Chip_Clock_GetSystemClockRate()/1000000., Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_SSP0)/1000000.);
 
 	//Chip_IAP_ReinvokeISP();
