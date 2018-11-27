@@ -179,6 +179,9 @@ void vUartRecvTask(void *pvParameters)
 		if(readSerial() == true){
 		    if(strcmp((char*)inString, "reset\n") == 0){
 		      resetPhone();
+		      powerReleOff();
+		      vTaskDelay(configTICK_RATE_HZ*15 );
+		      powerReleOn();
 		      //lastPhoneMsgRecvTime = xTaskGetTickCount();
 		    }
 		    else if(strcmp((char*)inString, "son\n") == 0){
@@ -232,6 +235,11 @@ void vUartRecvTask(void *pvParameters)
 		    else if(strstr((char*)inString, "heatOff\n") != NULL){
 		    	heatOff();
 		    }
+//		    else if(strstr((char*)inString, "restart\n") != NULL){
+//		    	powerReleOff();
+//		    	vTaskDelay(configTICK_RATE_HZ*15 );
+//		    	powerReleOn();
+//		    }
 		    else if( (strstr((char*)inString, "isp\n")!= NULL) ||
 		    		(strstr((char*)inString, "isp\r\n")!= NULL) ){
 		    	DEBUGSTR("enter ISP OK\n");
