@@ -210,6 +210,10 @@ void vUartRecvTask(void *pvParameters)
 		    	DEBUGSTR("pong\r\n");
 
 		    }
+		    else if(strstr((char*)inString, "up?") != NULL){
+		    	lastPhoneMsgRecvTime = xTaskGetTickCount();
+		    	printf("%d\r\n", xTaskGetTickCount()/1000);
+		    }
 		    else if(strstr((char*)inString, "fanOn\n") != NULL){
 		    	fanOn();
 		    }
