@@ -205,6 +205,11 @@ void vUartRecvTask(void *pvParameters)
 //			    	fanOff();
 //			    }
 		    }
+		    else if(strstr((char*)inString, "ping") != NULL){
+		    	lastPhoneMsgRecvTime = xTaskGetTickCount();
+		    	DEBUGSTR("pong\r\n");
+
+		    }
 		    else if(strstr((char*)inString, "fanOn\n") != NULL){
 		    	fanOn();
 		    }
@@ -266,6 +271,12 @@ void vUartRecvTask(void *pvParameters)
 //		      lastPhoneMsgRecvTime = millis();
 //		    }
 		    //inString = "";
+		}
+//#define TIMEOUT_MINS 3
+		if( ((xTaskGetTickCount() - lastPhoneMsgRecvTime)/1000) > 5*60){
+			DEBUGSTR("no exchange 5 min. restart\r\n");
+			resetPhone();
+			lastPhoneMsgRecvTime = xTaskGetTickCount();
 		}
 		vTaskDelay(configTICK_RATE_HZ / 10);
 

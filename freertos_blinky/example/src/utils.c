@@ -55,9 +55,13 @@ void resetPhone()
 	//vTaskDelay(configTICK_RATE_HZ*5);
 
 
+	powerReleOff();
+
 	vTaskDelay(configTICK_RATE_HZ*15);
 	Chip_GPIO_WritePortBit(LPC_GPIO, 1, 23, true); //Tacho_Fan1
 	//vTaskDelay(configTICK_RATE_HZ*30);
+
+	powerReleOn();
 }
 
 
