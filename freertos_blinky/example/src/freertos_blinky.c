@@ -255,9 +255,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY),
 				(xTaskHandle *) NULL);
 
-	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
-				configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES - 1),
-				(xTaskHandle *) NULL);
+//	xTaskCreate(vSSPTask, (signed char *) "vSSPTask",
+//				configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES - 1),
+//				(xTaskHandle *) NULL);
 
 //	xTaskCreate(vBVTask, (signed char *) "vBVTask",
 //				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),

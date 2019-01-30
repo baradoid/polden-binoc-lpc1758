@@ -14,9 +14,10 @@
 
 
 int xPos1 = 0, xPos2 = 0;
+int lastXPos1 = 0, lastXPos2 = 0;
 
 static SSP_ConfigFormat ssp_format;
-void vSSPTask(void *pvParameters)
+void initSSP()
 {
 	/* SSP initialization */
 	Board_SSP_Init(LPC_SSP0);
@@ -35,28 +36,38 @@ void vSSPTask(void *pvParameters)
 
 	Chip_SSP_SetFormat(LPC_SSP1, ssp_format.bits, ssp_format.frameFormat, ssp_format.clockMode);
 	Chip_SSP_Enable(LPC_SSP1);
+}
 
-	int lastXPos1 = 0, lastXPos2 = 0;
+bool checkEncData()
+{
+	bool ret = false;
+	Chip_SSP_SendFrame(LPC_SSP0, 0xabcd);
+	uint16_t ssp0 = Chip_SSP_ReceiveFrame(LPC_SSP0);
+
+	//ssp0 &= 0x1fff;
+	xPos1 = ssp0&0x1fff;
+	if(lastXPos1 != xPos1){
+		lastXPos1 = xPos1;
+		//xTaskNotify(xUartTaskHandle, SSP_ENC1_BIT_NOTIFY, eSetBits);
+		ret = true;
+	}
+
+	Chip_SSP_SendFrame(LPC_SSP1, 0xabcd);
+	uint16_t ssp1 = Chip_SSP_ReceiveFrame(LPC_SSP1);
+	xPos2 = ssp1&0x1fff;
+	if(lastXPos2 != xPos2){
+		lastXPos2 = xPos2;
+		//xTaskNotify(xUartTaskHandle, SSP_ENC2_BIT_NOTIFY, eSetBits);
+		ret = true;
+	}
+	return ret;
+}
+void vSSPTask(void *pvParameters)
+{
+	initSSP();
 	//bool bDataUpd = false;
 	while (1) {
-		Chip_SSP_SendFrame(LPC_SSP0, 0xabcd);
-		uint16_t ssp0 = Chip_SSP_ReceiveFrame(LPC_SSP0);
-
-		//ssp0 &= 0x1fff;
-		xPos1 = ssp0&0x1fff;
-		if(lastXPos1 != xPos1){
-			lastXPos1 = xPos1;
-			xTaskNotify(xUartTaskHandle, SSP_ENC1_BIT_NOTIFY, eSetBits);
-		}
-
-		Chip_SSP_SendFrame(LPC_SSP1, 0xabcd);
-		uint16_t ssp1 = Chip_SSP_ReceiveFrame(LPC_SSP1);
-		xPos2 = ssp1&0x1fff;
-		if(lastXPos2 != xPos2){
-			lastXPos2 = xPos2;
-			xTaskNotify(xUartTaskHandle, SSP_ENC2_BIT_NOTIFY, eSetBits);
-		}
-
+		checkEncData();
 		vTaskDelay(configTICK_RATE_HZ / 200);
 	}
 }

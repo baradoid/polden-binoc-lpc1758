@@ -32,7 +32,7 @@ void vUARTTask(void *pvParameters)
 
 	char str[50], lastStr[50];
 
-	int lastXPos1 = 0, lastXPos2 = 0;
+	//int lastXPos1 = 0, lastXPos2 = 0;
 	int lastAndrCpuTemp = 0, andrCpuTemp=0;
 
 	bool bDataUpdated = false;
@@ -51,7 +51,7 @@ void vUARTTask(void *pvParameters)
 		if(xTaskNotifyWait( 0x00,      	/* Don't clear any notification bits on entry. */
                 ULONG_MAX, 				/* Reset the notification value to 0 on exit. */
                 &ulNotifiedValue, 		/* Notified value pass out in ulNotifiedValue. */
-				configTICK_RATE_HZ/10 ) == pdFALSE ){
+				configTICK_RATE_HZ/100 ) == pdFALSE ){
 			//DEBUGSTR("to\r\n");
 			bDataUpdated = true;
 
@@ -79,20 +79,26 @@ void vUARTTask(void *pvParameters)
 		}
 
 		//if(xPos1 != lastXPos1){
-		if((ulNotifiedValue&SSP_ENC1_BIT_NOTIFY) != 0){
-			lastXPos1 = xPos1;
+//		if((ulNotifiedValue&SSP_ENC1_BIT_NOTIFY) != 0){
+//			lastXPos1 = xPos1;
+//		    bDataUpdated = true;
+//		    sprintf(&(str[5]), "%04X", xPos1);
+//		    str[9] = ' ';
+//		}
+//
+//
+//		//if(xPos2 != lastXPos2){
+//		if((ulNotifiedValue&SSP_ENC2_BIT_NOTIFY) != 0){
+//			lastXPos2 = xPos2;
+//		    bDataUpdated = true;
+//		    //sprintf(&(str[0]), "%04X", xPos2);
+//		    //str[4] = ' ';
+//		}
+
+		if(checkEncData() == true){
 		    bDataUpdated = true;
 		    sprintf(&(str[5]), "%04X", xPos1);
 		    str[9] = ' ';
-		}
-
-
-		//if(xPos2 != lastXPos2){
-		if((ulNotifiedValue&SSP_ENC2_BIT_NOTIFY) != 0){
-			lastXPos2 = xPos2;
-		    bDataUpdated = true;
-		    //sprintf(&(str[0]), "%04X", xPos2);
-		    //str[4] = ' ';
 		}
 
 		if((ulNotifiedValue&ADC_BIT_NOTIFY) != 0){
@@ -175,6 +181,8 @@ bool readSerial()
 void vUartRecvTask(void *pvParameters)
 {
 	uint64_t lastPhoneMsgRecvTime = 0;
+	initSSP();
+
 	while (1) {
 		if(readSerial() == true){
 		    if(strcmp((char*)inString, "reset\n") == 0){

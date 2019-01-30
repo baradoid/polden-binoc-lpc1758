@@ -8,3 +8,5 @@
 
 void vSSPTask(void *pvParameters);
 extern int xPos1, xPos2;
+void initSSP();
+bool checkEncData();
